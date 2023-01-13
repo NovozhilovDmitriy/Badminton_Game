@@ -33,6 +33,9 @@ class Pair(Player):
     def get_pair_players(self):
         return self.player1_name, self.player2_name
 
+    def get_pair_num(self):
+        return self.pair_num
+
 class Game():
 
     K=20
@@ -46,7 +49,7 @@ class Game():
         # self.wait_score_2 = 0
 
     def get_pair(self):
-        return self.pair1(), self.pair2()
+        return self.pair1
 
     def score_pair_1(self):
         return self.score_pair1
@@ -85,7 +88,7 @@ Game1 = Game(Pair1, Pair2, 21, 15)
 print('Pair1= ', Pair1.get_pair_players(), ', avr_score =', Pair1.get_pair_avr_score())
 print('Pair2= ', Pair2.get_pair_players(), ', avr_score =', Pair2.get_pair_avr_score())
 print('Game1 Pair1 = ', Game1.score_pair1, ', Game1 Pair2 = ', Game1.score_pair2)
-print(Game1.get_pair)
+print(Game1.get_pair())
 print('Ea_pair1_Game1= ', Game1.wait_score_1)
 print('Ea_pair2_Game1= ', Game1.wait_score_2)
 
