@@ -58,10 +58,10 @@ class Game():
         return self.score_pair2
 
     def wait_score_1(self):
-        return 1 / (2 + 10 ^ (self.get_pair_avr_score(pair1) - self.get_pair_avr_score(pair2) / 400))
+        return 1 / (2 + 10 ** (Pair1.get_pair_avr_score() - Pair2.get_pair_avr_score() / 400))
 
     def wait_score_2(self):
-        return 1 / (2 + 10 ^ (Pair.get_pair_avr_score(pair2) - Pair.get_pair_avr_score(pair1) / 400))
+        return 1 / (2 + 10 ** (Pair2.get_pair_avr_score() - Pair1.get_pair_avr_score() / 400))
 
     def real_score(self, one, two):
         if Game(one).score_pair1 > Game(two).score_pair2:
@@ -75,10 +75,10 @@ class Game():
     def real_score_2(self):
         return K * (real_score(self.pair2, self.pair1) - wait_score2(self))
 
-Dima_N = Player('Dima', 100)
-Gosha = Player('Gosha', 200)
-Toly = Player('Toly', 300)
-Denis = Player('Denis', 400)
+Dima_N = Player('Dima', 500)
+Gosha = Player('Gosha', 500)
+Toly = Player('Toly', 500)
+Denis = Player('Denis', 500)
 
 Pair1 = Pair('Pair1', Dima_N, Gosha)
 Pair2 = Pair('Pair2', Toly, Denis)
@@ -89,8 +89,8 @@ print('Pair1= ', Pair1.get_pair_players(), ', avr_score =', Pair1.get_pair_avr_s
 print('Pair2= ', Pair2.get_pair_players(), ', avr_score =', Pair2.get_pair_avr_score())
 print('Game1 Pair1 = ', Game1.score_pair1, ', Game1 Pair2 = ', Game1.score_pair2)
 print(Game1.get_pair())
-print('Ea_pair1_Game1= ', Game1.wait_score_1)
-print('Ea_pair2_Game1= ', Game1.wait_score_2)
+print('Ea_pair1_Game1= ', Game1.wait_score_1())
+print('Ea_pair2_Game1= ', Game1.wait_score_2())
 
 
 
