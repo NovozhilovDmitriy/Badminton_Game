@@ -1,5 +1,3 @@
-from decimal import Decimal
-
 
 class Player():
 
@@ -11,11 +9,16 @@ class Player():
     def set_daily_score(self, new_score):
         #  update player daily score after each game
         self.daily_score = self.daily_score + new_score
+        return self.get_daily_score()
 
     def get_daily_score(self):
         return self.daily_score
 
     def get_score(self):
+        return self.score
+
+    def update_score(self):
+        self.score = self.score + self.daily_score
         return self.score
 
     def name(self):
@@ -31,6 +34,8 @@ class Pair(Player):
         self.player2_score = Player.get_score(player2)
         self.player1_daily_score = Player.get_daily_score(player1)
         self.player2_daily_score = Player.get_daily_score(player2)
+        self.player1 = player1
+        self.player2 = player2
 
     def get_pair_avr_score(self):
         #  found average pair score for next estimation
@@ -82,30 +87,63 @@ class Game(Pair):
         #  found update Pair2 score what will be used to multiply with Player daily score. 20 - need update later
         return 20 * (self.real_score(self.score_pair2, self.score_pair1) - self.wait_score_2())
 
-    def get_sc(self):
-        return self.pair1.player1_name(get_daily_score)
+    def update_players(self):
+        self.pair1.player1.set_daily_score(self.real_score_1())
+        self.pair1.player2.set_daily_score(self.real_score_1())
+        self.pair2.player1.set_daily_score(self.real_score_2())
+        self.pair2.player2.set_daily_score(self.real_score_2())
+        return print(Dima.get_daily_score(),Gosha.get_daily_score(),Toly.get_daily_score(),Denis.get_daily_score())
 
+class Day(Game):
+
+    def __init__(self, date, game1, game2, game3):
+        self.date = date
+        self.game1 = game1
+        self.game2 = game2
+        self.game3 = game3
+
+    def update_day_score(self):
+        Game1.update_players()
+        Game2.update_players()
+        Game3.update_players()
+        Dima.update_score()
+        Gosha.update_score()
+        Toly.update_score()
+        Denis.update_score()
 
 Dima = Player('Dima', 500)
 Gosha = Player('Gosha', 500)
 Toly = Player('Toly', 500)
 Denis = Player('Denis', 500)
 
+Players = (Dima, Gosha, Toly, Denis)
+
 Pair1 = Pair('Pair1', Dima, Gosha)
 Pair2 = Pair('Pair2', Toly, Denis)
+Pair3 = Pair('Pair3', Dima, Denis)
+Pair4 = Pair('Pair4', Toly, Gosha)
+Pair5 = Pair('Pair5', Dima, Toly)
+Pair6 = Pair('Pair6', Gosha, Denis)
+
 
 Game1 = Game(Pair1, Pair2, 21, 15)
+Game2 = Game(Pair3, Pair4, 12, 21)
+Game3 = Game(Pair5, Pair6, 18, 21)
+
+Day1 = Day('10.01.2023', Game1, Game2, Game3)
 
 print('Pair1= ', Pair1.get_pair_players(), ', avr_score =', Pair1.get_pair_avr_score())
 print('Pair2= ', Pair2.get_pair_players(), ', avr_score =', Pair2.get_pair_avr_score())
 print('Game1 Pair1 = ', Game1.score_pair1, ', Game1 Pair2 = ', Game1.score_pair2)
-print('Game1 Pair1/Pair2 = ',Game1.get_pair())
+print('Game1 Pair1/Pair2 = ', Game1.get_pair())
 print('Ea_pair1_Game1= ', Game1.wait_score_1())
 print('Ea_pair2_Game1= ', Game1.wait_score_2())
 print('Real_Score_1 = ', Game1.real_score_1())
 print('Real_Score_2 = ', Game1.real_score_2())
-print('Daily_Score_Player1 = ', Game1.pair1.player1_name, Game1.pair1.pair_num, Pair1.player1_daily_score)
-print(Game1.get_sc())
+Day1.update_day_score()
+for i in range(len(Players)):
+    print (Players[i].name, Players[i].score)
+
 
 
 
