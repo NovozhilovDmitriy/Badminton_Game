@@ -9,6 +9,7 @@ class Player():
         self.daily_score = 0
 
     def set_daily_score(self, new_score):
+        #  update player daily score after each game
         self.daily_score = self.daily_score + new_score
 
     def get_daily_score(self):
@@ -32,7 +33,8 @@ class Pair(Player):
         self.player2_daily_score = Player.get_daily_score(player2)
 
     def get_pair_avr_score(self):
-         return (self.player1_score + self.player2_score)/2
+        #  found average pair score for next estimation
+        return (self.player1_score + self.player2_score)/2
 
     def get_pair_players(self):
         return self.player1_name, self.player2_name
@@ -58,21 +60,26 @@ class Game(Pair):
         return self.score_pair2
 
     def wait_score_1(self):
+        #  Found waiting score of the Pair1 in game by Elo formula.
         return 1 / (2 + 10 ** (self.pair1.get_pair_avr_score() - self.pair2.get_pair_avr_score()) / 400)
 
     def wait_score_2(self):
+        #  Found waiting score of the Pair2 in game by Elo formula.
         return 1 / (2 + 10 ** (self.pair2.get_pair_avr_score() - self.pair1.get_pair_avr_score()) / 400)
 
     def real_score(self, one, two):
+        # compare Game score between Pairs and found parameter of the winners (if win = 1, if loose = 0, for 21:21 need add 0.5)
         if one > two:
             return 1
         else:
             return 0
 
     def real_score_1(self):
+        #  found update Pair1 score what will be used to multiply with Player daily score. 20 - need update later
         return 20 * (self.real_score(self.score_pair1, self.score_pair2) - self.wait_score_1())
 
     def real_score_2(self):
+        #  found update Pair2 score what will be used to multiply with Player daily score. 20 - need update later
         return 20 * (self.real_score(self.score_pair2, self.score_pair1) - self.wait_score_2())
 
     def get_sc(self):
