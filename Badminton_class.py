@@ -27,21 +27,15 @@ class Pair(Player):
 
     def __init__(self, pair_num, player1, player2):
         self.pair_num = pair_num
-        # self.player1_name = Player.name(player1)
-        # self.player2_name = Player.name(player2)
-        # self.player1_score = Player.get_score(player1)
-        # self.player2_score = Player.get_score(player2)
-        # self.player1_daily_score = Player.get_daily_score(player1)
-        # self.player2_daily_score = Player.get_daily_score(player2)
         self.player1 = player1
         self.player2 = player2
 
     def get_pair_avr_score(self):
         #  found average pair score for next estimation
-        return (self.player1_score + self.player2_score)/2
+        return (self.player1.score + self.player2.score)/2
 
     def get_pair_players(self):
-        return self.player1_name, self.player2_name
+        return self.player1.name, self.player2.name
 
     def get_pair_num(self):
         return self.pair_num
@@ -72,7 +66,8 @@ class Game(Pair):
         return 1 / (2 + 10 ** (self.pair2.get_pair_avr_score() - self.pair1.get_pair_avr_score()) / 400)
 
     def real_score(self, one, two):
-        # compare Game score between Pairs and found parameter of the winners (if win = 1, if loose = 0, for 21:21 need add 0.5)
+        # compare Game score between Pairs and found parameter of the winners (if win = 1, if loose = 0, for 21:23
+        # need add 0.2 and update logic later)
         if one > two and one >= 21:
             return 1
         elif two > one and one < 20:
@@ -89,6 +84,7 @@ class Game(Pair):
         return 20 * (self.real_score(self.score_pair2, self.score_pair1) - self.wait_score_2())
 
     def update_players(self):
+        #  this method updated daily score for each Player in this Game.
         self.pair1.player1.set_daily_score(self.real_score_1())
         self.pair1.player2.set_daily_score(self.real_score_1())
         self.pair2.player1.set_daily_score(self.real_score_2())
@@ -102,11 +98,8 @@ class Day(Game):
         self.day_games = day_games
 
     def update_day_score(self):
-        # Game1.update_players()
-        # Game2.update_players()
-        # Game3.update_players()
-        # Dima.update_score()
-        # Gosha.update_score()
-        # Toly.update_score()
-        # Denis.update_score()
-        pass
+        for i in range(len(self.day_games)):
+            self.day_games[i].update_players()
+
+    def get_day(self):
+        return self.date
