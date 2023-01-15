@@ -1,4 +1,3 @@
-
 class Player():
 
     def __init__(self, name, score):
@@ -28,12 +27,12 @@ class Pair(Player):
 
     def __init__(self, pair_num, player1, player2):
         self.pair_num = pair_num
-        self.player1_name = Player.name(player1)
-        self.player2_name = Player.name(player2)
-        self.player1_score = Player.get_score(player1)
-        self.player2_score = Player.get_score(player2)
-        self.player1_daily_score = Player.get_daily_score(player1)
-        self.player2_daily_score = Player.get_daily_score(player2)
+        # self.player1_name = Player.name(player1)
+        # self.player2_name = Player.name(player2)
+        # self.player1_score = Player.get_score(player1)
+        # self.player2_score = Player.get_score(player2)
+        # self.player1_daily_score = Player.get_daily_score(player1)
+        # self.player2_daily_score = Player.get_daily_score(player2)
         self.player1 = player1
         self.player2 = player2
 
@@ -74,10 +73,12 @@ class Game(Pair):
 
     def real_score(self, one, two):
         # compare Game score between Pairs and found parameter of the winners (if win = 1, if loose = 0, for 21:21 need add 0.5)
-        if one > two:
+        if one > two and one >= 21:
             return 1
-        else:
+        elif two > one and one < 20:
             return 0
+        elif two > one and one >= 20:
+            return 0.2
 
     def real_score_1(self):
         #  found update Pair1 score what will be used to multiply with Player daily score. 20 - need update later
@@ -92,62 +93,20 @@ class Game(Pair):
         self.pair1.player2.set_daily_score(self.real_score_1())
         self.pair2.player1.set_daily_score(self.real_score_2())
         self.pair2.player2.set_daily_score(self.real_score_2())
-        return print(Dima.get_daily_score(),Gosha.get_daily_score(),Toly.get_daily_score(),Denis.get_daily_score())
+        #return print(Dima.get_daily_score(),Gosha.get_daily_score(),Toly.get_daily_score(),Denis.get_daily_score())
 
 class Day(Game):
 
-    def __init__(self, date, game1, game2, game3):
+    def __init__(self, date, day_games):
         self.date = date
-        self.game1 = game1
-        self.game2 = game2
-        self.game3 = game3
+        self.day_games = day_games
 
     def update_day_score(self):
-        Game1.update_players()
-        Game2.update_players()
-        Game3.update_players()
-        Dima.update_score()
-        Gosha.update_score()
-        Toly.update_score()
-        Denis.update_score()
-
-Dima = Player('Dima', 500)
-Gosha = Player('Gosha', 500)
-Toly = Player('Toly', 500)
-Denis = Player('Denis', 500)
-
-Players = (Dima, Gosha, Toly, Denis)
-
-Pair1 = Pair('Pair1', Dima, Gosha)
-Pair2 = Pair('Pair2', Toly, Denis)
-Pair3 = Pair('Pair3', Dima, Denis)
-Pair4 = Pair('Pair4', Toly, Gosha)
-Pair5 = Pair('Pair5', Dima, Toly)
-Pair6 = Pair('Pair6', Gosha, Denis)
-
-
-Game1 = Game(Pair1, Pair2, 21, 15)
-Game2 = Game(Pair3, Pair4, 12, 21)
-Game3 = Game(Pair5, Pair6, 18, 21)
-
-Day1 = Day('10.01.2023', Game1, Game2, Game3)
-
-print('Pair1= ', Pair1.get_pair_players(), ', avr_score =', Pair1.get_pair_avr_score())
-print('Pair2= ', Pair2.get_pair_players(), ', avr_score =', Pair2.get_pair_avr_score())
-print('Game1 Pair1 = ', Game1.score_pair1, ', Game1 Pair2 = ', Game1.score_pair2)
-print('Game1 Pair1/Pair2 = ', Game1.get_pair())
-print('Ea_pair1_Game1= ', Game1.wait_score_1())
-print('Ea_pair2_Game1= ', Game1.wait_score_2())
-print('Real_Score_1 = ', Game1.real_score_1())
-print('Real_Score_2 = ', Game1.real_score_2())
-Day1.update_day_score()
-for i in range(len(Players)):
-    print (Players[i].name, Players[i].score)
-
-
-
-
-
-
-
-
+        # Game1.update_players()
+        # Game2.update_players()
+        # Game3.update_players()
+        # Dima.update_score()
+        # Gosha.update_score()
+        # Toly.update_score()
+        # Denis.update_score()
+        pass
