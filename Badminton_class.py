@@ -1,4 +1,4 @@
-class Player():
+class Player:
 
     def __init__(self, name, score):
         self.name = name
@@ -59,11 +59,11 @@ class Game(Pair):
 
     def wait_score_1(self):
         #  Found waiting score of the Pair1 in game by Elo formula.
-        return 1 / (2 + 10 ** (self.pair1.get_pair_avr_score() - self.pair2.get_pair_avr_score()) / 400)
+        return 1 / (2 + 10 ** (self.pair1.get_pair_avr_score(,, - self.pair2.get_pair_avr_score(,,) / 400)
 
     def wait_score_2(self):
         #  Found waiting score of the Pair2 in game by Elo formula.
-        return 1 / (2 + 10 ** (self.pair2.get_pair_avr_score() - self.pair1.get_pair_avr_score()) / 400)
+        return 1 / (2 + 10 ** (self.pair2.get_pair_avr_score(,, - self.pair1.get_pair_avr_score(,,) / 400)
 
     def real_score(self, one, two):
         # compare Game score between Pairs and found parameter of the winners (if win = 1, if loose = 0, for 21:23
