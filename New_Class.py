@@ -17,6 +17,7 @@ class Player:
         return self.score
 
     def update_score(self):
+        #  update personal score after each day
         self.score = self.score + self.daily_score
         return self.score
 
@@ -33,12 +34,27 @@ class Game:
         self.player4 = player4
         self.score_pair1 = score_pair1
         self.score_pair2 = score_pair2
-        self.Online_Players_Dict =[]
+        self.Online_Players_Dict = []
         self.Temp_Players_Dict = []
+        self.Temp_import_players = []
 
-    def new(self):
+    def import_players(self, a):
+        #  import all previous players with score to current game. Each game need to execute.
+        #  Using by create_temp_players def
+        self.Temp_import_players = a
+
+    def update_Players_Dict(self, a):
+        #  added all new players (name and current score) of current Game to argement list
+        #  This method should execute after Day, not after each Game.
+        a.extend(self.Temp_Players_Dict)
+
+    def create_temp_players(self):
+        #  Code will check if Players from external file.
+        #  For exist Player - create score from list, for new Player - create default score '500'
+        #  List of Game Players will keep in Online_Players_Dict
+        #  If Player not exist in external file -> add this Player to Temp_Players_Dict
         if not isinstance(self.player1, Player):
-            for i in Players_Dict:
+            for i in self.Temp_import_players:
                  if i['name'] == self.player1:
                       self.player1 = Player(self.player1, i['score'])
                       a = dict(name=self.player1.name, score=self.player1.score)
@@ -50,7 +66,7 @@ class Game:
                 self.Temp_Players_Dict.append(a)
 
         if not isinstance(self.player2, Player):
-            for i in Players_Dict:
+            for i in self.Temp_import_players:
                 if i['name'] == self.player2:
                     self.player2 = Player(self.player2, i['score'])
                     a = dict(name=self.player2.name, score=self.player2.score)
@@ -62,7 +78,7 @@ class Game:
                 self.Temp_Players_Dict.append(a)
 
         if not isinstance(self.player3, Player):
-            for i in Players_Dict:
+            for i in self.Temp_import_players:
                 if i['name'] == self.player3:
                     self.player3 = Player(self.player3, i['score'])
                     a = dict(name=self.player3.name, score=self.player3.score)
@@ -74,7 +90,7 @@ class Game:
                 self.Temp_Players_Dict.append(a)
 
         if not isinstance(self.player4, Player):
-            for i in Players_Dict:
+            for i in self.Temp_import_players:
                 if i['name'] == self.player4:
                     self.player4 = Player(self.player4, i['score'])
                     a = dict(name=self.player4.name, score=self.player4.score)
@@ -85,17 +101,10 @@ class Game:
                 self.Online_Players_Dict.append(a)
                 self.Temp_Players_Dict.append(a)
 
-        Players_Dict.extend(self.Temp_Players_Dict)
-
     def get_pair_avr_score(self, pl_1, pl_2):
         #  Count average score of the pairs by formula (score1+score2)/2
         return (pl_1.score + pl_2.score) / 2
 
-    def score_pair_1(self):
-        return self.score_pair1
-
-    def score_pair_2(self):
-        return self.score_pair2
 
     def wait_score_1(self):
         #  Found waiting score of the Pair1 in game by Elo formula.
@@ -133,8 +142,14 @@ class Game:
         self.player2.set_daily_score(self.real_score_1())
         self.player3.set_daily_score(self.real_score_2())
         self.player4.set_daily_score(self.real_score_2())
+        return print(self.player1.name, '=', self.player1.daily_score,
+                     self.player2.name, '=', self.player2.daily_score,
+                     self.player3.name, '=', self.player3.daily_score,
+                     self.player4.name, '=', self.player4.daily_score)
 
     def update_players(self):
+        #  this method call Player Class and update current Players score for all Players in this Game
+        #  Should be called only 1 time in Day. NOT after each Game
         self.player1.update_score()
         self.player2.update_score()
         self.player3.update_score()
@@ -144,8 +159,10 @@ class Game:
                      self.player3.name, '=', self.player3.score,
                      self.player4.name, '=', self.player4.score)
 
-    def update_pl_dict(self):
-        for i in Players_Dict:
+    def update_pl_dict(self, a):
+        #  Find all current Players from argument and update their personal score.
+        #  This method should execute after current Day, NOT after each Game
+        for i in a:
             if i['name'] == self.player1.name:
                 i['score'] = self.player1.score
             elif i['name'] == self.player2.name:
