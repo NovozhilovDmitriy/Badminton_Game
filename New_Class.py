@@ -181,3 +181,21 @@ class Game:
                 i['score'] = self.player3.score
             elif i['name'] == self.player4.name:
                 i['score'] = self.player4.score
+
+class Day:
+
+    def __init__(self, day, games):
+        self.day = day
+        self.list_of_games = games
+
+    def start_games_counting(self, Players_Dict):
+        for i in self.list_of_games:
+            self.game = Game(i['player1'], i['player2'], i['player3'], i['player4'], i['score1'], i['score2'])
+            self.game.import_players(Players_Dict)  # this is for each game
+            self.game.create_temp_players()  # this is for each game
+            self.game.set_daily_score()  # this is after each game
+            self.game.update_Players_Dict(Players_Dict)
+        for i in Players_Dict:
+            i['score'] = i['score'] + i['daily_score']
+            i['daily_score'] = 0
+        print('After full Day', Players_Dict)
