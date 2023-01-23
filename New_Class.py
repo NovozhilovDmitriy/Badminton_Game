@@ -1,9 +1,9 @@
 class Player:
 
-    def __init__(self, name, score=500):
+    def __init__(self, name, score=500, daily_score=0):
         self.name = name
         self.score = score
-        self.daily_score = 0
+        self.daily_score = daily_score
 
     def set_daily_score(self, new_score):
         #  update player daily score after each game
@@ -47,6 +47,16 @@ class Game:
         #  added all new players (name and current score) of current Game to argement list
         #  This method should execute after Day, not after each Game.
         a.extend(self.Temp_Players_Dict)
+        for i in a:
+            if i['name'] == self.player1.name:
+                i['daily_score'] = self.player1.daily_score
+            elif i['name'] == self.player2.name:
+                i['daily_score'] = self.player2.daily_score
+            elif i['name'] == self.player3.name:
+                i['daily_score'] = self.player3.daily_score
+            elif i['name'] == self.player4.name:
+                i['daily_score'] = self.player4.daily_score
+
 
     def create_temp_players(self):
         #  Code will check if Players from external file.
@@ -56,48 +66,48 @@ class Game:
         if not isinstance(self.player1, Player):
             for i in self.Temp_import_players:
                  if i['name'] == self.player1:
-                      self.player1 = Player(self.player1, i['score'])
-                      a = dict(name=self.player1.name, score=self.player1.score)
+                      self.player1 = Player(self.player1, i['score'], i['daily_score'])
+                      a = dict(name=self.player1.name, score=self.player1.score, daily_score=self.player1.daily_score)
                       self.Online_Players_Dict.append(a)
             if not isinstance(self.player1, Player):
                 self.player1 = Player(self.player1)
-                a = dict(name=self.player1.name, score=self.player1.score)
+                a = dict(name=self.player1.name, score=self.player1.score, daily_score=self.player1.daily_score)
                 self.Online_Players_Dict.append(a)
                 self.Temp_Players_Dict.append(a)
 
         if not isinstance(self.player2, Player):
             for i in self.Temp_import_players:
                 if i['name'] == self.player2:
-                    self.player2 = Player(self.player2, i['score'])
-                    a = dict(name=self.player2.name, score=self.player2.score)
+                    self.player2 = Player(self.player2, i['score'], i['daily_score'])
+                    a = dict(name=self.player2.name, score=self.player2.score, daily_score=self.player2.daily_score)
                     self.Online_Players_Dict.append(a)
             if not isinstance(self.player2, Player):
                 self.player2 = Player(self.player2)
-                a = dict(name=self.player2.name, score=self.player2.score)
+                a = dict(name=self.player2.name, score=self.player2.score, daily_score=self.player2.daily_score)
                 self.Online_Players_Dict.append(a)
                 self.Temp_Players_Dict.append(a)
 
         if not isinstance(self.player3, Player):
             for i in self.Temp_import_players:
                 if i['name'] == self.player3:
-                    self.player3 = Player(self.player3, i['score'])
-                    a = dict(name=self.player3.name, score=self.player3.score)
+                    self.player3 = Player(self.player3, i['score'], i['daily_score'])
+                    a = dict(name=self.player3.name, score=self.player3.score, daily_score=self.player3.daily_score)
                     self.Online_Players_Dict.append(a)
             if not isinstance(self.player3, Player):
                 self.player3 = Player(self.player3)
-                a = dict(name=self.player3.name, score=self.player3.score)
+                a = dict(name=self.player3.name, score=self.player3.score, daily_score=self.player3.daily_score)
                 self.Online_Players_Dict.append(a)
                 self.Temp_Players_Dict.append(a)
 
         if not isinstance(self.player4, Player):
             for i in self.Temp_import_players:
                 if i['name'] == self.player4:
-                    self.player4 = Player(self.player4, i['score'])
-                    a = dict(name=self.player4.name, score=self.player4.score)
+                    self.player4 = Player(self.player4, i['score'], i['daily_score'])
+                    a = dict(name=self.player4.name, score=self.player4.score, daily_score=self.player4.daily_score)
                     self.Online_Players_Dict.append(a)
             if not isinstance(self.player4, Player):
                 self.player4 = Player(self.player4)
-                a = dict(name=self.player4.name, score=self.player4.score)
+                a = dict(name=self.player4.name, score=self.player4.score, daily_score=self.player4.daily_score)
                 self.Online_Players_Dict.append(a)
                 self.Temp_Players_Dict.append(a)
 
