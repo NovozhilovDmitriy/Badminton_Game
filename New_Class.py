@@ -63,53 +63,23 @@ class Game:
         #  For exist Player - create score from list, for new Player - create default score '500'
         #  List of Game Players will keep in Online_Players_Dict
         #  If Player not exist in external file -> add this Player to Temp_Players_Dict
-        if not isinstance(self.player1, Player):
-            for i in self.Temp_import_players:
-                 if i['name'] == self.player1:
-                      self.player1 = Player(self.player1, i['score'], i['daily_score'])
-                      a = dict(name=self.player1.name, score=self.player1.score, daily_score=self.player1.daily_score)
-                      self.Online_Players_Dict.append(a)
-            if not isinstance(self.player1, Player):
-                self.player1 = Player(self.player1)
-                a = dict(name=self.player1.name, score=self.player1.score, daily_score=self.player1.daily_score)
-                self.Online_Players_Dict.append(a)
-                self.Temp_Players_Dict.append(a)
-
-        if not isinstance(self.player2, Player):
-            for i in self.Temp_import_players:
-                if i['name'] == self.player2:
-                    self.player2 = Player(self.player2, i['score'], i['daily_score'])
-                    a = dict(name=self.player2.name, score=self.player2.score, daily_score=self.player2.daily_score)
+        for i in 1, 2, 3, 4:
+            temp = self.__getattribute__('player%d' % i)
+            if not isinstance(temp, Player):
+                for ii in self.Temp_import_players:
+                    if ii['name'] == self.__getattribute__('player%d' % i):
+                        self.__setattr__('player%d' % i, Player(self.__getattribute__('player%d' % i), ii['score'], ii['daily_score']))
+                        b = self.__getattribute__('player%d' % i)
+                        a = dict(name=b.name, score=b.score, daily_score=b.daily_score)
+                        self.Online_Players_Dict.append(a)
+                temp = self.__getattribute__('player%d' % i)
+                if not isinstance(temp, Player):
+                    self.__setattr__('player%d' % i, Player(self.__getattribute__('player%d' % i)))
+                    b = self.__getattribute__('player%d' %i)
+                    a = dict(name=b.name, score=b.score, daily_score=b.daily_score)
                     self.Online_Players_Dict.append(a)
-            if not isinstance(self.player2, Player):
-                self.player2 = Player(self.player2)
-                a = dict(name=self.player2.name, score=self.player2.score, daily_score=self.player2.daily_score)
-                self.Online_Players_Dict.append(a)
-                self.Temp_Players_Dict.append(a)
+                    self.Temp_Players_Dict.append(a)
 
-        if not isinstance(self.player3, Player):
-            for i in self.Temp_import_players:
-                if i['name'] == self.player3:
-                    self.player3 = Player(self.player3, i['score'], i['daily_score'])
-                    a = dict(name=self.player3.name, score=self.player3.score, daily_score=self.player3.daily_score)
-                    self.Online_Players_Dict.append(a)
-            if not isinstance(self.player3, Player):
-                self.player3 = Player(self.player3)
-                a = dict(name=self.player3.name, score=self.player3.score, daily_score=self.player3.daily_score)
-                self.Online_Players_Dict.append(a)
-                self.Temp_Players_Dict.append(a)
-
-        if not isinstance(self.player4, Player):
-            for i in self.Temp_import_players:
-                if i['name'] == self.player4:
-                    self.player4 = Player(self.player4, i['score'], i['daily_score'])
-                    a = dict(name=self.player4.name, score=self.player4.score, daily_score=self.player4.daily_score)
-                    self.Online_Players_Dict.append(a)
-            if not isinstance(self.player4, Player):
-                self.player4 = Player(self.player4)
-                a = dict(name=self.player4.name, score=self.player4.score, daily_score=self.player4.daily_score)
-                self.Online_Players_Dict.append(a)
-                self.Temp_Players_Dict.append(a)
 
     def get_pair_avr_score(self, pl_1, pl_2):
         #  Count average score of the pairs by formula (score1+score2)/2

@@ -5,7 +5,7 @@ Players_Dict = []
 
 #print('Game1')
 # print('Current player list in HDD', Players_Dict)
-# game1 = Game('Коля', 'Дима Н', 'Женя', 'Антон Б', 21, 9)
+#game1 = Game('Коля', 'Дима Н', 'Женя', 'Антон Б', 21, 9)
 # game2 = Game('Гоша', 'Толик', 'Миша', 'Макс', 21, 17)
 # game3 = Game('Макс', 'Дима Н', 'Коля', 'Миша', 21, 19)
 # game4 = Game('Ира',	'Гоша',	'Женя',	'Толик', 15, 21)
@@ -79,8 +79,8 @@ Day2 = Day('12.01.2023', games2)
 Day1.start_games_counting(Players_Dict)
 Day2.start_games_counting(Players_Dict)
 
-# game1.import_players(Players_Dict) #this is for each game
-# game1.create_temp_players() #this is for each game
+#game1.import_players(Players_Dict) #this is for each game
+#game1.create_temp_players()  #this is for each game
 # #print('Real of pair1 =', game1.real_score_1(), 'Real of pair2 =', game1.real_score_2())
 # game1.set_daily_score() #this is after each game
 # game1.update_Players_Dict(Players_Dict)
