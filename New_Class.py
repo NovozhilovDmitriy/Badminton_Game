@@ -38,16 +38,13 @@ class Game:
         self.Temp_Players_Dict = []
         self.Temp_import_players = []
 
-    def import_players(self, a):
+    def import_players(self, dict):
         #  import all previous players with score to current game. Each game need to execute.
         #  Using by create_temp_players def
-        self.Temp_import_players = a
+        self.Temp_import_players = dict
 
-    def update_Players_Dict(self, a):
-        #  added all new players (name and current score) of current Game to argement list
-        #  This method should execute after Day, not after each Game.
-        a.extend(self.Temp_Players_Dict)
-        for i in a:
+    def update_daily_score_in_dict(self, dict):
+        for i in dict:
             if i['name'] == self.player1.name:
                 i['daily_score'] = self.player1.daily_score
             elif i['name'] == self.player2.name:
@@ -56,6 +53,11 @@ class Game:
                 i['daily_score'] = self.player3.daily_score
             elif i['name'] == self.player4.name:
                 i['daily_score'] = self.player4.daily_score
+
+    def extend_players_dict(self, dict):
+        #  added all new players (name and current score) of current Game to argement list
+        #  This method should execute after Day, not after each Game.
+        dict.extend(self.Temp_Players_Dict)
 
 
     def create_temp_players(self):
@@ -139,10 +141,10 @@ class Game:
                      self.player3.name, '=', self.player3.score,
                      self.player4.name, '=', self.player4.score)
 
-    def update_pl_dict(self, a):
+    def update_player_score_in_dict(self, dict):
         #  Find all current Players from argument and update their personal score.
         #  This method should execute after current Day, NOT after each Game
-        for i in a:
+        for i in dict:
             if i['name'] == self.player1.name:
                 i['score'] = self.player1.score
             elif i['name'] == self.player2.name:
@@ -164,7 +166,8 @@ class Day:
             self.game.import_players(Players_Dict)  # this is for each game
             self.game.create_temp_players()  # this is for each game
             self.game.set_daily_score()  # this is after each game
-            self.game.update_Players_Dict(Players_Dict)
+            self.game.extend_players_dict(Players_Dict)
+            self.game.update_daily_score_in_dict(Players_Dict)
         for i in Players_Dict:
             i['score'] = i['score'] + i['daily_score']
             i['daily_score'] = 0
