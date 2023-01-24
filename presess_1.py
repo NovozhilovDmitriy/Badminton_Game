@@ -1,4 +1,5 @@
 from New_Class import Player, Game, Day
+from input import Import_Excel
 
 Players_Dict = []
 #Players_Dict = [{'name': 'Дима Н', 'score': 500,'daily_score': 0}]
@@ -28,56 +29,58 @@ Players_Dict = []
 # game21 = Game('Ира', 'Гоша', 'Миша', 'Дима Н', 11, 21)
 # game22 = Game('Коля', 'Толик', 'Женя', 'Макс', 21, 14)
 
-games = [{'player1': 'Коля', 'player2': 'Дима Н', 'player3': 'Женя', 'player4': 'Антон Б', 'score1': 21, 'score2': 9},
-            {'player1': 'Гоша', 'player2': 'Толик', 'player3': 'Миша', 'player4': 'Макс','score1': 21, 'score2': 17},
-            {'player1': 'Макс', 'player2': 'Дима Н', 'player3': 'Коля', 'player4':'Миша','score1': 21, 'score2': 19},
-            {'player1': 'Ира', 'player2': 'Гоша', 'player3': 'Женя', 'player4':	'Толик','score1': 15, 'score2': 21},
-            {'player1': 'Антон Б', 'player2': 'Гоша', 'player3': 'Коля', 'player4': 'Толик','score1': 8, 'score2': 21},
-            {'player1': 'Женя', 'player2': 'Миша', 'player3': 'Макс', 'player4': 'Ира','score1': 21, 'score2':	18},
-            {'player1': 'Макс', 'player2': 'Толик', 'player3': 'Ира', 'player4': 'Антон Б','score1': 21, 'score2':	10},
-            {'player1': 'Миша', 'player2': 'Дима Н', 'player3': 'Коля', 'player4': 'Женя','score1': 18, 'score2': 21},
-            {'player1': 'Миша', 'player2': 'Ира', 'player3': 'Макс', 'player4': 'Антон Б','score1': 12, 'score2': 21},
-            {'player1': 'Коля', 'player2': 'Гоша', 'player3': 'Женя', 'player4': 'Дима Н','score1': 19,  'score2':21},
-            {'player1': 'Антон Б', 'player2': 'Гоша', 'player3': 'Женя', 'player4': 'Миша','score1': 12, 'score2': 21},
-            {'player1': 'Дима Н', 'player2': 'Толик', 'player3': 'Макс', 'player4': 'Ира','score1':	21, 'score2':12},
-            {'player1': 'Ира', 'player2': 'Толик', 'player3': 'Коля', 'player4': 'Миша','score1': 14, 'score2': 21},
-            {'player1': 'Дима Н', 'player2':	'Гоша', 'player3': 'Макс', 'player4': 'Антон Б','score1': 19, 'score2': 21},
-            {'player1': 'Ира', 'player2': 'Антон Б', 'player3': 'Женя' , 'player4': 'Дима Н','score1': 15, 'score2': 21},
-            {'player1': 'Коля', 'player2': 'Гоша', 'player3': 'Макс', 'player4': 'Толик','score1': 21, 'score2': 17},
-            {'player1': 'Коля', 'player2': 'Дима Н', 'player3':	'Миша', 'player4': 'Гоша','score1': 21, 'score2': 19},
-            {'player1': 'Антон Б', 'player2': 'Толик', 'player3': 'Женя', 'player4': 'Ира','score1': 15, 'score2': 21},
-            {'player1': 'Коля', 'player2': 'Женя', 'player3': 'Макс', 'player4': 'Гоша','score1': 12, 'score2': 21},
-            {'player1': 'Антон Б', 'player2': 'Дима Н', 'player3': 'Миша', 'player4': 'Толик','score1': 16, 'score2':	21},
-            {'player1': 'Ира', 'player2': 'Гоша', 'player3': 'Миша', 'player4': 'Дима Н','score1': 11, 'score2': 21},
-            {'player1': 'Коля', 'player2': 'Толик', 'player3': 'Женя', 'player4': 'Макс','score1': 21, 'score2': 14}]
+# games = [{'player1': 'Коля', 'player2': 'Дима Н', 'player3': 'Женя', 'player4': 'Антон Б', 'score1': 21, 'score2': 9},
+#             {'player1': 'Гоша', 'player2': 'Толик', 'player3': 'Миша', 'player4': 'Макс','score1': 21, 'score2': 17},
+#             {'player1': 'Макс', 'player2': 'Дима Н', 'player3': 'Коля', 'player4':'Миша','score1': 21, 'score2': 19},
+#             {'player1': 'Ира', 'player2': 'Гоша', 'player3': 'Женя', 'player4':	'Толик','score1': 15, 'score2': 21},
+#             {'player1': 'Антон Б', 'player2': 'Гоша', 'player3': 'Коля', 'player4': 'Толик','score1': 8, 'score2': 21},
+#             {'player1': 'Женя', 'player2': 'Миша', 'player3': 'Макс', 'player4': 'Ира','score1': 21, 'score2':	18},
+#             {'player1': 'Макс', 'player2': 'Толик', 'player3': 'Ира', 'player4': 'Антон Б','score1': 21, 'score2':	10},
+#             {'player1': 'Миша', 'player2': 'Дима Н', 'player3': 'Коля', 'player4': 'Женя','score1': 18, 'score2': 21},
+#             {'player1': 'Миша', 'player2': 'Ира', 'player3': 'Макс', 'player4': 'Антон Б','score1': 12, 'score2': 21},
+#             {'player1': 'Коля', 'player2': 'Гоша', 'player3': 'Женя', 'player4': 'Дима Н','score1': 19,  'score2':21},
+#             {'player1': 'Антон Б', 'player2': 'Гоша', 'player3': 'Женя', 'player4': 'Миша','score1': 12, 'score2': 21},
+#             {'player1': 'Дима Н', 'player2': 'Толик', 'player3': 'Макс', 'player4': 'Ира','score1':	21, 'score2':12},
+#             {'player1': 'Ира', 'player2': 'Толик', 'player3': 'Коля', 'player4': 'Миша','score1': 14, 'score2': 21},
+#             {'player1': 'Дима Н', 'player2':	'Гоша', 'player3': 'Макс', 'player4': 'Антон Б','score1': 19, 'score2': 21},
+#             {'player1': 'Ира', 'player2': 'Антон Б', 'player3': 'Женя' , 'player4': 'Дима Н','score1': 15, 'score2': 21},
+#             {'player1': 'Коля', 'player2': 'Гоша', 'player3': 'Макс', 'player4': 'Толик','score1': 21, 'score2': 17},
+#             {'player1': 'Коля', 'player2': 'Дима Н', 'player3':	'Миша', 'player4': 'Гоша','score1': 21, 'score2': 19},
+#             {'player1': 'Антон Б', 'player2': 'Толик', 'player3': 'Женя', 'player4': 'Ира','score1': 15, 'score2': 21},
+#             {'player1': 'Коля', 'player2': 'Женя', 'player3': 'Макс', 'player4': 'Гоша','score1': 12, 'score2': 21},
+#             {'player1': 'Антон Б', 'player2': 'Дима Н', 'player3': 'Миша', 'player4': 'Толик','score1': 16, 'score2':	21},
+#             {'player1': 'Ира', 'player2': 'Гоша', 'player3': 'Миша', 'player4': 'Дима Н','score1': 11, 'score2': 21},
+#             {'player1': 'Коля', 'player2': 'Толик', 'player3': 'Женя', 'player4': 'Макс','score1': 21, 'score2': 14}]
+#
+# games2 = [{'player1': 'Коля', 'player2': 'Дима Н', 'player3': 'Женя', 'player4': 'Антон Б', 'score1': 21, 'score2': 9},
+#             {'player1': 'Гоша', 'player2': 'Толик', 'player3': 'Миша', 'player4': 'Макс','score1': 21, 'score2': 17},
+#             {'player1': 'Макс', 'player2': 'Дима Н', 'player3': 'Коля', 'player4':'Миша','score1': 21, 'score2': 19},
+#             {'player1': 'Ира', 'player2': 'Гоша', 'player3': 'Женя', 'player4':	'Толик','score1': 15, 'score2': 21},
+#             {'player1': 'Антон Б', 'player2': 'Гоша', 'player3': 'Коля', 'player4': 'Толик','score1': 8, 'score2': 21},
+#             {'player1': 'Женя', 'player2': 'Миша', 'player3': 'Макс', 'player4': 'Ира','score1': 21, 'score2':	18},
+#             {'player1': 'Макс', 'player2': 'Толик', 'player3': 'Ира', 'player4': 'Антон Б','score1': 21, 'score2':	10},
+#             {'player1': 'Миша', 'player2': 'Дима Н', 'player3': 'Коля', 'player4': 'Женя','score1': 18, 'score2': 21},
+#             {'player1': 'Миша', 'player2': 'Ира', 'player3': 'Макс', 'player4': 'Антон Б','score1': 12, 'score2': 21},
+#             {'player1': 'Коля', 'player2': 'Гоша', 'player3': 'Женя', 'player4': 'Дима Н','score1': 19,  'score2':21},
+#             {'player1': 'Антон Б', 'player2': 'Гоша', 'player3': 'Женя', 'player4': 'Миша','score1': 12, 'score2': 21},
+#             {'player1': 'Дима Н', 'player2': 'Толик', 'player3': 'Макс', 'player4': 'Ира','score1':	21, 'score2':12},
+#             {'player1': 'Ира', 'player2': 'Толик', 'player3': 'Коля', 'player4': 'Миша','score1': 14, 'score2': 21},
+#             {'player1': 'Дима Н', 'player2':	'Гоша', 'player3': 'Макс', 'player4': 'Антон Б','score1': 19, 'score2': 21},
+#             {'player1': 'Ира', 'player2': 'Антон Б', 'player3': 'Женя' , 'player4': 'Дима Н','score1': 15, 'score2': 21},
+#             {'player1': 'Коля', 'player2': 'Гоша', 'player3': 'Макс', 'player4': 'Толик','score1': 21, 'score2': 17},
+#             {'player1': 'Коля', 'player2': 'Дима Н', 'player3':	'Миша', 'player4': 'Гоша','score1': 21, 'score2': 19},
+#             {'player1': 'Антон Б', 'player2': 'Толик', 'player3': 'Женя', 'player4': 'Ира','score1': 15, 'score2': 21},
+#             {'player1': 'Коля', 'player2': 'Женя', 'player3': 'Макс', 'player4': 'Гоша','score1': 12, 'score2': 21},
+#             {'player1': 'Антон Б', 'player2': 'Дима Н', 'player3': 'Миша', 'player4': 'Толик','score1': 16, 'score2':	21},
+#             {'player1': 'Ира', 'player2': 'Гоша', 'player3': 'Миша', 'player4': 'Дима Н','score1': 11, 'score2': 21},
+#             {'player1': 'Коля', 'player2': 'Толик', 'player3': 'Женя', 'player4': 'Макс','score1': 21, 'score2': 14}]
 
-games2 = [{'player1': 'Коля', 'player2': 'Дима Н', 'player3': 'Женя', 'player4': 'Антон Б', 'score1': 21, 'score2': 9},
-            {'player1': 'Гоша', 'player2': 'Толик', 'player3': 'Миша', 'player4': 'Макс','score1': 21, 'score2': 17},
-            {'player1': 'Макс', 'player2': 'Дима Н', 'player3': 'Коля', 'player4':'Миша','score1': 21, 'score2': 19},
-            {'player1': 'Ира', 'player2': 'Гоша', 'player3': 'Женя', 'player4':	'Толик','score1': 15, 'score2': 21},
-            {'player1': 'Антон Б', 'player2': 'Гоша', 'player3': 'Коля', 'player4': 'Толик','score1': 8, 'score2': 21},
-            {'player1': 'Женя', 'player2': 'Миша', 'player3': 'Макс', 'player4': 'Ира','score1': 21, 'score2':	18},
-            {'player1': 'Макс', 'player2': 'Толик', 'player3': 'Ира', 'player4': 'Антон Б','score1': 21, 'score2':	10},
-            {'player1': 'Миша', 'player2': 'Дима Н', 'player3': 'Коля', 'player4': 'Женя','score1': 18, 'score2': 21},
-            {'player1': 'Миша', 'player2': 'Ира', 'player3': 'Макс', 'player4': 'Антон Б','score1': 12, 'score2': 21},
-            {'player1': 'Коля', 'player2': 'Гоша', 'player3': 'Женя', 'player4': 'Дима Н','score1': 19,  'score2':21},
-            {'player1': 'Антон Б', 'player2': 'Гоша', 'player3': 'Женя', 'player4': 'Миша','score1': 12, 'score2': 21},
-            {'player1': 'Дима Н', 'player2': 'Толик', 'player3': 'Макс', 'player4': 'Ира','score1':	21, 'score2':12},
-            {'player1': 'Ира', 'player2': 'Толик', 'player3': 'Коля', 'player4': 'Миша','score1': 14, 'score2': 21},
-            {'player1': 'Дима Н', 'player2':	'Гоша', 'player3': 'Макс', 'player4': 'Антон Б','score1': 19, 'score2': 21},
-            {'player1': 'Ира', 'player2': 'Антон Б', 'player3': 'Женя' , 'player4': 'Дима Н','score1': 15, 'score2': 21},
-            {'player1': 'Коля', 'player2': 'Гоша', 'player3': 'Макс', 'player4': 'Толик','score1': 21, 'score2': 17},
-            {'player1': 'Коля', 'player2': 'Дима Н', 'player3':	'Миша', 'player4': 'Гоша','score1': 21, 'score2': 19},
-            {'player1': 'Антон Б', 'player2': 'Толик', 'player3': 'Женя', 'player4': 'Ира','score1': 15, 'score2': 21},
-            {'player1': 'Коля', 'player2': 'Женя', 'player3': 'Макс', 'player4': 'Гоша','score1': 12, 'score2': 21},
-            {'player1': 'Антон Б', 'player2': 'Дима Н', 'player3': 'Миша', 'player4': 'Толик','score1': 16, 'score2':	21},
-            {'player1': 'Ира', 'player2': 'Гоша', 'player3': 'Миша', 'player4': 'Дима Н','score1': 11, 'score2': 21},
-            {'player1': 'Коля', 'player2': 'Толик', 'player3': 'Женя', 'player4': 'Макс','score1': 21, 'score2': 14}]
+#Import_Excel.import_excel(Import_Excel.load('2Расстановки.xlsx', '6'))
 
-Day1 = Day('10.01.2023', games)
-Day2 = Day('12.01.2023', games2)
+Day1 = Day('10.01.2023', Import_Excel.import_excel(Import_Excel.load('2Расстановки.xlsx', '6')))
+#Day2 = Day('12.01.2023', games2)
 Day1.start_games_counting(Players_Dict)
-Day2.start_games_counting(Players_Dict)
+#Day2.start_games_counting(Players_Dict)
 
 #game1.import_players(Players_Dict) #this is for each game
 #game1.create_temp_players()  #this is for each game
