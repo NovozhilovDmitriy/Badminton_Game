@@ -5,7 +5,7 @@ def create_table():
     sqlite_connection = sqlite3.connect('list_of_games.db')
     games_table = '''CREATE TABLE games (
                     id INTEGER PRIMARY KEY,
-                    date datetime NOT NULL,
+                    date DATE FORMAT 'dd.mm.yyyy' NOT NULL,
                     player1 TEXT NOT NULL,
                     player2 TEXT NOT NULL,
                     player3 TEXT NOT NULL,
@@ -20,7 +20,7 @@ def create_table():
     print(record)
     cursor.close()
 
-
+#create_table()
 def create_connection(db_file):
     """ create a database connection to the SQLite database
         specified by db_file
@@ -45,13 +45,30 @@ def create_task(conn, task):
     """
 
     sql = ''' INSERT INTO games(date,player1,player2,player3,player4,score1,score2)
-              VALUES('01-01-2023',?,?,?,?,?,?) '''
+              VALUES(?,?,?,?,?,?,?) '''
 
     cur = conn.cursor()
     cur.execute(sql, task)
     conn.commit()
     return cur.lastrowid
 
+def check_date(date):
+    database = 'list_of_games.db'
+
+    # create a database connection
+    conn = create_connection(database)
+    sql = ''' select date from games where date = (?) '''
+    cur = conn.cursor()
+    cur.execute(sql, (date,))
+    result = cur.fetchall()
+    if len(result) == 0:
+        return True
+    else:
+        return False
+
+
+
+#check_date(12.01.2023)
 
 def insert_games(games):
     database = 'list_of_games.db'
@@ -64,4 +81,3 @@ def insert_games(games):
 
         # create tasks
         create_task(conn, task_1)
-

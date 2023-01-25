@@ -77,9 +77,9 @@ Players_Dict = []
 
 #Import_Excel.import_excel(Import_Excel.load('2Расстановки.xlsx', '6'))
 
-Day1 = Day('10.01.2023', Import_Excel.import_excel(Import_Excel.load('2Расстановки.xlsx', '6')))
+Day1 = Day('10.01.2023', Import_Excel.import_excel('10.01.2023', Import_Excel.load('2Расстановки.xlsx', '6')))
 Day1.start_games_counting(Players_Dict)
-Day2 = Day('12.01.2023', Import_Excel.import_excel(Import_Excel.load('2Расстановки.xlsx', '8')))
+Day2 = Day('12.01.2023', Import_Excel.import_excel('12.01.2023', Import_Excel.load('2Расстановки.xlsx', '8')))
 Day2.start_games_counting(Players_Dict)
 
 #game1.import_players(Players_Dict) #this is for each game
