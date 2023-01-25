@@ -1,5 +1,6 @@
 import pandas
 import json
+import DB_SQLite
 
 side1 = 'Левая площадка'
 class Import_Excel:
@@ -25,7 +26,9 @@ class Import_Excel:
                     if row <= len(test):
                         for m in range(len(test)):
                             if Import_Excel.check_none(test[row+1][str(column+1)]):
-                                temp_players.append(dict(player1=test[int(row)][str(k)],player2=test[int(row)][str(k+1)],player3=test[int(row)][str(k+2)],player4=test[int(row)][str(k+3)], score1=test[int(row+1)][str(k+1)], score2=test[int(row+1)][str(k+2)]))
+                                a = dict(player1=test[int(row)][str(k)],player2=test[int(row)][str(k+1)],player3=test[int(row)][str(k+2)],player4=test[int(row)][str(k+3)], score1=test[int(row+1)][str(k+1)], score2=test[int(row+1)][str(k+2)])
+                                temp_players.append(a)
+                                DB_SQLite.insert_games([a['player1'], a['player2'], a['player3'], a['player4'], a['score1'], a['score2']])
                                 players.extend(temp_players)
                                 temp_players = []
                                 row = row + 2
