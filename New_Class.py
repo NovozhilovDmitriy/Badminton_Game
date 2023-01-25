@@ -88,26 +88,26 @@ class Game:
         return (pl_1.score + pl_2.score) / 2
 
 
-    def wait_score_1(self):
-        #  Found waiting score of the Pair1 in game by Elo formula.
-        return 1 / (2 + 10 ** (
-                self.get_pair_avr_score(self.player1, self.player2) - self.get_pair_avr_score(self.player3,
-                                                                                              self.player4)) / 400)
-
     def wait_score_2(self):
+        #  Found waiting score of the Pair1 in game by Elo formula.
+        return 1 / (1 + 10 ** ((
+                self.get_pair_avr_score(self.player1, self.player2) - self.get_pair_avr_score(self.player3,
+                                                                                              self.player4)) / 100))
+
+    def wait_score_1(self):
         #  Found waiting score of the Pair2 in game by Elo formula.
-        return 1 / (2 + 10 ** (
+        return 1 / (1 + 10 ** ((
                 self.get_pair_avr_score(self.player3, self.player4) - self.get_pair_avr_score(self.player1,
-                                                                                              self.player2)) / 400)
+                                                                                              self.player2)) / 100))
 
     def real_score(self, one, two):
         # compare Game score between Pairs and found parameter of the winners (if win = 1, if loose = 0, for 21:23
         # need add 0.2 and update logic later)
-        if one > two and one >= 21:
+        if 21 <= one > two:
             return 1
-        elif two > one and one < 20:
+        elif two > one < 20:
             return 0
-        elif two > one and one >= 20:
+        elif two > one >= 20:
             return 0.2
 
     def real_score_1(self):
@@ -124,10 +124,12 @@ class Game:
         self.player2.set_daily_score(self.real_score_1())
         self.player3.set_daily_score(self.real_score_2())
         self.player4.set_daily_score(self.real_score_2())
-        return print(self.player1.name, '=', self.player1.daily_score,
-                     self.player2.name, '=', self.player2.daily_score,
-                     self.player3.name, '=', self.player3.daily_score,
-                     self.player4.name, '=', self.player4.daily_score)
+        return print('game \n',self.player1.name, '=', self.player1.daily_score,'current=',self.player1.score,'\n',
+                     self.player2.name, '=', self.player2.daily_score,'current=',self.player2.score,'\n',
+                     '  score=',self.score_pair1,'pair_avr=',self.get_pair_avr_score(self.player1, self.player2),'Ea=',self.wait_score_1(),'Sa=',self.real_score(self.score_pair1, self.score_pair2),'Ra=',self.real_score_1(),'\n',
+                     self.player3.name, '=', self.player3.daily_score,'current=',self.player3.score,'\n',
+                     self.player4.name, '=', self.player4.daily_score,'current=',self.player4.score,'\n',
+                     '  score=',self.score_pair2,'pair_avr=',self.get_pair_avr_score(self.player3, self.player4),'Ea=',self.wait_score_2(),'Sa=',self.real_score(self.score_pair2, self.score_pair1),'Ra=',self.real_score_2())
 
     def update_players(self):
         #  this method call Player Class and update current Players score for all Players in this Game

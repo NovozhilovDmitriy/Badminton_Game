@@ -17,10 +17,10 @@ class Import_Excel:
     def import_excel(test):
         temp_players = []
         players = []
-        for i, j in zip(test, (0,1)):
+        for i, j in zip(test, (0, 1)):
             for z, k in zip(i, range(len(i))):
                 if i[z] == side1:
-                    row = int(j+1)
+                    row = int(j + 1)
                     column = int(k)
                     if row <= len(test):
                         for m in range(len(test)):
