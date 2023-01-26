@@ -1,3 +1,6 @@
+import DB_SQLite
+
+
 class Player:
 
     def __init__(self, name, score=500, daily_score=0):
@@ -118,18 +121,27 @@ class Game:
         #  found update Pair2 score what will be used to multiply with Player daily score. 20 - need update later
         return 20 * (self.real_score(self.score_pair2, self.score_pair1) - self.wait_score_2())
 
-    def set_daily_score(self):
+    def set_daily_score(self, date):
         #  this method updated daily score for each Player in this Game.
+        self.date = date
         self.player1.set_daily_score(self.real_score_1())
         self.player2.set_daily_score(self.real_score_1())
         self.player3.set_daily_score(self.real_score_2())
         self.player4.set_daily_score(self.real_score_2())
-        return print('game \n',self.player1.name, '=', self.player1.daily_score,'current=',self.player1.score,'\n',
-                     self.player2.name, '=', self.player2.daily_score,'current=',self.player2.score,'\n',
-                     '  score=',self.score_pair1,'pair_avr=',self.get_pair_avr_score(self.player1, self.player2),'Ea=',self.wait_score_1(),'Sa=',self.real_score(self.score_pair1, self.score_pair2),'Ra=',self.real_score_1(),'\n',
-                     self.player3.name, '=', self.player3.daily_score,'current=',self.player3.score,'\n',
-                     self.player4.name, '=', self.player4.daily_score,'current=',self.player4.score,'\n',
-                     '  score=',self.score_pair2,'pair_avr=',self.get_pair_avr_score(self.player3, self.player4),'Ea=',self.wait_score_2(),'Sa=',self.real_score(self.score_pair2, self.score_pair1),'Ra=',self.real_score_2())
+        stat = (self.date,
+                self.player1.name, self.player1.daily_score, self.player1.score,
+                self.player2.name, self.player2.daily_score, self.player2.score, self.score_pair1,
+                self.get_pair_avr_score(self.player1, self.player2), self.wait_score_1(), self.real_score(self.score_pair1, self.score_pair2), self.real_score_1(),
+                self.player3.name, self.player3.daily_score, self.player3.score,
+                self.player4.name, self.player4.daily_score, self.player4.score, self.score_pair2,
+                self.get_pair_avr_score(self.player3, self.player4), self.wait_score_2(), self.real_score(self.score_pair2, self.score_pair1), self.real_score_2())
+        DB_SQLite.insert_stat(stat)
+        # return print('game=', self.date,'\n',self.player1.name, '=', self.player1.daily_score,'current=',self.player1.score,'\n',
+        #              self.player2.name, '=', self.player2.daily_score,'current=',self.player2.score,'\n',
+        #              '  score=',self.score_pair1,'pair_avr=',self.get_pair_avr_score(self.player1, self.player2),'Ea=',self.wait_score_1(),'Sa=',self.real_score(self.score_pair1, self.score_pair2),'Ra=',self.real_score_1(),'\n',
+        #              self.player3.name, '=', self.player3.daily_score,'current=',self.player3.score,'\n',
+        #              self.player4.name, '=', self.player4.daily_score,'current=',self.player4.score,'\n',
+        #              '  score=',self.score_pair2,'pair_avr=',self.get_pair_avr_score(self.player3, self.player4),'Ea=',self.wait_score_2(),'Sa=',self.real_score(self.score_pair2, self.score_pair1),'Ra=',self.real_score_2())
 
     def update_players(self):
         #  this method call Player Class and update current Players score for all Players in this Game
@@ -158,8 +170,8 @@ class Game:
 
 class Day:
 
-    def __init__(self, day, games):
-        self.day = day
+    def __init__(self, date, games):
+        self.date = date
         self.list_of_games = games
 
     def start_games_counting(self, Players_Dict):
@@ -167,7 +179,7 @@ class Day:
             self.game = Game(i['player1'], i['player2'], i['player3'], i['player4'], i['score1'], i['score2'])
             self.game.import_players(Players_Dict)  # this is for each game
             self.game.create_temp_players()  # this is for each game
-            self.game.set_daily_score()  # this is after each game
+            self.game.set_daily_score(self.date)  # this is after each game
             self.game.extend_players_dict(Players_Dict)
             self.game.update_daily_score_in_dict(Players_Dict)
         for i in Players_Dict:
