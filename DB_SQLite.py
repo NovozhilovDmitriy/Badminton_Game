@@ -19,10 +19,10 @@ def create_table():
                     daily_score REAL NOT NULL);'''
     cursor = sqlite_connection.cursor()
     cursor.execute(games_table)
-    #cursor.execute(players_score)
+    cursor.execute(players_score)
     sqlite_connection.commit()
-    record = cursor.fetchall()
-    print(record)
+    cursor.fetchall()
+    print('Table games and table score created (if not exist)')
     cursor.close()
 
 def create_stat_table():
@@ -55,34 +55,18 @@ def create_stat_table():
     cursor = sqlite_connection.cursor()
     cursor.execute(stat_table)
     sqlite_connection.commit()
-    record = cursor.fetchall()
-    print(record)
+    cursor.fetchall()
+    print('Table stat created (if not exist)')
     cursor.close()
 
-def drop_table_stat():
-    # Connecting to sqlite
-    conn = sqlite3.connect('list_of_games.db')
-
-    # Creating a cursor object using the cursor() method
-    cursor = conn.cursor()
-
-    # Doping EMPLOYEE table if already exists
-    cursor.execute("DROP TABLE IF EXISTS stat")
-    #print("Table dropped... ")
-
-    # Commit your changes in the database
-    conn.commit()
-
-    # Closing the connection
-    conn.close()
 
 #create_table()
-def create_connection(db_file):
+def create_connection():
     """ create a database connection to the SQLite database
         specified by db_file
-    :param db_file: database file
     :return: Connection object or None
     """
+    db_file = 'list_of_games.db'
     conn = None
     try:
         conn = sqlite3.connect(db_file)
@@ -91,15 +75,25 @@ def create_connection(db_file):
 
     return conn
 
+def drop_table_stat(table):
 
-def insert_game(conn, task):
+    conn = create_connection()
+    sql = f"""DROP table IF EXISTS {table}"""
+
+    cur = conn.cursor()
+    cur.execute(sql)
+    conn.commit()
+    return cur.lastrowid
+
+
+def insert_games(task):
     """
     Create a new task
     :param conn:
     :param task:
     :return:
     """
-
+    conn = create_connection()
     sql = ''' INSERT INTO games(date,player1,player2,player3,player4,score1,score2)
               VALUES(?,?,?,?,?,?,?) '''
 
@@ -109,10 +103,9 @@ def insert_game(conn, task):
     return cur.lastrowid
 
 def insert_stat(task):
-    database = 'list_of_games.db'
 
     # create a database connection
-    conn = create_connection(database)
+    conn = create_connection()
 
     sql = ''' INSERT INTO stat(date,player1,pl1_sum_daily_score,pl1_current_score,
                                     player2,pl2_sum_daily_score,pl2_current_score,
@@ -127,14 +120,14 @@ def insert_stat(task):
     conn.commit()
     return cur.lastrowid
 
-def insert_player(conn, task):
+def insert_player(task):
     """
     Create a new task
     :param conn:
     :param task:
     :return:
     """
-
+    conn = create_connection()
     sql = ''' INSERT INTO players(name,score,daily_score)
               VALUES(?,?,?) '''
 
@@ -144,10 +137,8 @@ def insert_player(conn, task):
     return cur.lastrowid
 
 def check_date(date):
-    database = 'list_of_games.db'
-
     # create a database connection
-    conn = create_connection(database)
+    conn = create_connection()
     sql = ''' select date from games where date = (?) '''
     cur = conn.cursor()
     cur.execute(sql, (date,))
@@ -158,10 +149,8 @@ def check_date(date):
         return False
 
 def table_date_list():
-    database = 'list_of_games.db'
-
     # create a database connection
-    conn = create_connection(database)
+    conn = create_connection()
     sql = ''' select distinct date from games order by date asc; '''
     conn.row_factory = lambda cursor, row: row[0]
     cur = conn.cursor()
@@ -170,9 +159,8 @@ def table_date_list():
     return list(result)
 
 def export_one_day_games(date):
-    database = 'list_of_games.db'
     # create a database connection
-    conn = create_connection(database)
+    conn = create_connection()
     sql = ''' select player1,player2,player3,player4,score1,score2 from games where date = ? order by id asc ;'''
     conn.row_factory = sqlite3.Row
     values = conn.execute(sql, (date,)).fetchall()
@@ -181,18 +169,127 @@ def export_one_day_games(date):
         list.append({k: item[k] for k in item.keys()})
     return list
 
-# queue = table_date_list()
-# for i in queue:
-#     Players_Dict = export_one_day_games(i)
+def select_stat1():
 
-def insert_games(games):
-    database = 'list_of_games.db'
+    Players_Total_Stat = ''' with t1 as
+    ( select id, date, player1 player, player2 partner, pair1_avr_score pair_avr_score, pair1_Ea Ea, pair1_Sa Sa, pair1_Ra Ra from stat t
+    union all select id, date, player2 player, player1 partner, pair1_avr_score, pair1_Ea, pair1_Sa, pair1_Ra from stat t
+    union all select id, date, player3 player, player4 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
+    union all select id, date, player4 player, player3 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
+    ), t2 as
+    ( select t1.*
+           , row_number() over (partition by player order by date desc, id desc) game_rank
+           , rank() over (partition by player order by date desc) date_rank
+        from t1
+    )
+    select player
+         , 500 + sum(Ra) score -- текущий рейтинг
+         , sum(case when date_rank = 1 then Ra end) last_date_Ra -- дельту прироста за последнюю дату
+         , count(*) cnt_game -- сколько игр было сыграно
+      from t2
+      group by player
+      order by sum(Ra) desc;'''
 
-    # create a database connection
-    conn = create_connection(database)
-    with conn:
-        # tasks
-        task_1 = games
+    Players_win_pair_stat = '''with t1 as
+    ( select id, date, player1 player, player2 partner, pair1_avr_score pair_avr_score, pair1_Ea Ea, pair1_Sa Sa, pair1_Ra Ra, sign(pair1_Ra) win from stat t
+    union all select id, date, player2 player, player1 partner, pair1_avr_score, pair1_Ea, pair1_Sa, pair1_Ra, sign(pair1_Ra) win from stat t
+    union all select id, date, player3 player, player4 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra, sign(pair2_Ra) win from stat t
+    union all select id, date, player4 player, player3 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra, sign(pair2_Ra) win from stat t
+    )
+    select player, partner
+         , count(*)
+         , coalesce(sum(case when win>0 then 1 end), 0) cnt_win
+         , coalesce(sum(case when win<0 then 1 end), 0) cnt_lost
+         , 100*coalesce(sum(case when win>0 then 1 end), 0)/count(*) pct_win
+      from t1
+      group by player, partner
+      having count(*) > 2
+      order by player, pct_win desc;'''
 
-        # create tasks
-        insert_game(conn, task_1)
+    Players_win_opponent_stat = '''with t1 as
+    ( select id, date, player1 player, player3 opponent, sign(pair1_Ra) win from stat t
+    union all select id, date, player1 player, player4 opponent, sign(pair1_Ra) win from stat t
+    union all select id, date, player2 player, player3 opponent, sign(pair1_Ra) win from stat t
+    union all select id, date, player2 player, player4 opponent, sign(pair1_Ra) win from stat t
+    union all select id, date, player3 player, player1 opponent, sign(pair2_Ra) win from stat t
+    union all select id, date, player3 player, player2 opponent, sign(pair2_Ra) win from stat t
+    union all select id, date, player4 player, player1 opponent, sign(pair2_Ra) win from stat t
+    union all select id, date, player4 player, player2 opponent, sign(pair2_Ra) win from stat t
+    )
+    select player, opponent
+         , count(*)
+         , coalesce(sum(case when win>0 then 1 end), 0) cnt_win
+         , coalesce(sum(case when win<0 then 1 end), 0) cnt_lost
+         , 100*coalesce(sum(case when win>0 then 1 end), 0)/count(*) pct_win
+      from t1
+      group by player, opponent
+      having count(*) > 2
+      order by player, pct_win desc;'''
+
+    Players_daily_stat = '''with t1 as
+    ( select id, date, player1 player, player2 partner, pair1_avr_score pair_avr_score, pair1_Ea Ea, pair1_Sa Sa, pair1_Ra Ra from stat t
+    union all select id, date, player2 player, player1 partner, pair1_avr_score, pair1_Ea, pair1_Sa, pair1_Ra from stat t
+    union all select id, date, player3 player, player4 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
+    union all select id, date, player4 player, player3 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
+    )
+    select player
+         , date
+         , 500 + sum(sum(Ra)) over (partition by player order by date) score -- текущий рейтинг
+         , sum(count(*)) over (partition by player order by date) cnt_game -- сколько игр было сыграно
+      from t1
+      group by player, date
+      order by player, date;'''
+
+    Players_daily2_stat = '''with d as
+( select distinct date from stat
+), pl as
+( select distinct player from (select player1 player from stat union all select player2 from stat union all select player3 from stat union all select player4 from stat)
+), t1 as
+( select id, date, player1 player, player2 partner, pair1_avr_score pair_avr_score, pair1_Ea Ea, pair1_Sa Sa, pair1_Ra Ra from stat t
+union all select id, date, player2 player, player1 partner, pair1_avr_score, pair1_Ea, pair1_Sa, pair1_Ra from stat t
+union all select id, date, player3 player, player4 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
+union all select id, date, player4 player, player3 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
+) 
+select pl.player
+     , d.date
+     , case when count(Ra) <> 0 then 500 + coalesce(sum(sum(Ra)) over (partition by pl.player order by d.date), 0) end score -- текущий рейтинг
+  from d cross join pl
+       left outer join t1 on t1.date = d.date and t1.player = pl.player
+  group by pl.player, d.date
+  order by pl.player, d.date;'''
+
+    from xlsxwriter.workbook import Workbook
+    workbook = Workbook('Total_Stat.xlsx')
+    worksheet = workbook.add_worksheet('Total')
+
+    conn = create_connection()
+    c=conn.cursor()
+    mysel=c.execute(Players_Total_Stat)
+    for i, row in enumerate(mysel):
+        for j, value in enumerate(row):
+            worksheet.write(i, j, value)
+
+    worksheet = workbook.add_worksheet('Pair-Win')
+    mysel=c.execute(Players_win_pair_stat)
+    for i, row in enumerate(mysel):
+        for j, value in enumerate(row):
+            worksheet.write(i, j, value)
+
+    worksheet = workbook.add_worksheet('Opponent-Win')
+    mysel=c.execute(Players_win_opponent_stat)
+    for i, row in enumerate(mysel):
+        for j, value in enumerate(row):
+            worksheet.write(i, j, value)
+
+    worksheet = workbook.add_worksheet('Daily')
+    mysel=c.execute(Players_daily_stat)
+    for i, row in enumerate(mysel):
+        for j, value in enumerate(row):
+            worksheet.write(i, j, value)
+
+    worksheet = workbook.add_worksheet('Daily2')
+    mysel=c.execute(Players_daily2_stat)
+    for i, row in enumerate(mysel):
+        for j, value in enumerate(row):
+            worksheet.write(i, j, value)
+    workbook.close()

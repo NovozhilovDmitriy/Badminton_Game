@@ -185,4 +185,5 @@ class Day:
         for i in Players_Dict:
             i['score'] = i['score'] + i['daily_score']
             i['daily_score'] = 0
-        print('After full Day', Players_Dict)
+            #print(f"{i['name']}={i['score']}")
+        print(f'After full {self.date}', *((i['name'], int(i['score'])) for i in Players_Dict))
