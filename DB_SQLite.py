@@ -1,5 +1,9 @@
 import sqlite3
 from sqlite3 import Error
+from xlsxwriter.workbook import Workbook
+
+import pandas
+
 
 def create_table():
     sqlite_connection = sqlite3.connect('list_of_games.db')
@@ -171,24 +175,43 @@ def export_one_day_games(date):
 
 def select_stat1():
 
+    Players_Last_Day_Stat = '''with t1 as
+( select id, date, player1 player, player2 partner, pair1_avr_score pair_avr_score, pair1_Ea Ea, pair1_Sa Sa, pair1_Ra Ra, sign(pair1_Ra) win, sign(case when pair1_Ra > -1 and pair1_Ra < 1 then pair1_Ra end) tie_win from stat t
+union all select id, date, player2 player, player1 partner, pair1_avr_score, pair1_Ea, pair1_Sa, pair1_Ra, sign(pair1_Ra) win, sign(case when pair1_Ra > -1 and pair1_Ra < 1 then pair1_Ra end) tie_win from stat t
+union all select id, date, player3 player, player4 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra, sign(pair2_Ra) win, sign(case when pair1_Ra > -1 and pair1_Ra < 1 then pair1_Ra end) tie_win from stat t
+union all select id, date, player4 player, player3 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra, sign(pair2_Ra) win, sign(case when pair1_Ra > -1 and pair1_Ra < 1 then pair1_Ra end) tie_win from stat t
+)
+select player
+     , sum(Ra) last_date_Ra --дельта счета за этот день
+     , count(case when win = 1 then 1 end) cnt_win -- количество побед
+     , count(case when win = -1 then 1 end) cnt_lost -- количество поражений
+     , count(case when tie_win = 1 then 1 end) cnt_tie_win -- количество больше-меньше побед
+     , count(case when tie_win = -1 then 1 end) cnt_tie_lost -- количество больше-меньше поражений
+     , count(*) cnt_game -- количество всего игр 
+  from t1
+  where date = (select max(date) from stat)
+  group by player
+  order by sum(Ra) desc;'''
+
     Players_Total_Stat = ''' with t1 as
-    ( select id, date, player1 player, player2 partner, pair1_avr_score pair_avr_score, pair1_Ea Ea, pair1_Sa Sa, pair1_Ra Ra from stat t
-    union all select id, date, player2 player, player1 partner, pair1_avr_score, pair1_Ea, pair1_Sa, pair1_Ra from stat t
-    union all select id, date, player3 player, player4 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
-    union all select id, date, player4 player, player3 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
-    ), t2 as
-    ( select t1.*
-           , row_number() over (partition by player order by date desc, id desc) game_rank
-           , rank() over (partition by player order by date desc) date_rank
-        from t1
-    )
-    select player
-         , 500 + sum(Ra) score -- текущий рейтинг
-         , sum(case when date_rank = 1 then Ra end) last_date_Ra -- дельту прироста за последнюю дату
-         , count(*) cnt_game -- сколько игр было сыграно
-      from t2
-      group by player
-      order by sum(Ra) desc;'''
+( select id, date, player1 player, player2 partner, pair1_avr_score pair_avr_score, pair1_Ea Ea, pair1_Sa Sa, pair1_Ra Ra from stat t
+union all select id, date, player2 player, player1 partner, pair1_avr_score, pair1_Ea, pair1_Sa, pair1_Ra from stat t
+union all select id, date, player3 player, player4 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
+union all select id, date, player4 player, player3 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
+), t2 as
+( select t1.*
+       , rank() over (partition by player order by date desc) player_date_rank
+       , rank() over (order by date desc) date_rank
+    from t1
+)
+select player
+     , 500 + sum(Ra) score -- текущий рейтинг
+     , sum(case when date_rank = 1 then Ra end) last_date_Ra -- дельту прироста за последнюю дату
+     , count(*) cnt_game -- сколько игр было сыграно
+     , max(date) last_date -- датой когда этот игрок играл последний раз
+  from t2
+  group by player
+  order by sum(Ra) desc;'''
 
     Players_win_pair_stat = '''with t1 as
     ( select id, date, player1 player, player2 partner, pair1_avr_score pair_avr_score, pair1_Ea Ea, pair1_Sa Sa, pair1_Ra Ra, sign(pair1_Ra) win from stat t
@@ -226,21 +249,21 @@ def select_stat1():
       having count(*) > 2
       order by player, pct_win desc;'''
 
-    Players_daily_stat = '''with t1 as
-    ( select id, date, player1 player, player2 partner, pair1_avr_score pair_avr_score, pair1_Ea Ea, pair1_Sa Sa, pair1_Ra Ra from stat t
-    union all select id, date, player2 player, player1 partner, pair1_avr_score, pair1_Ea, pair1_Sa, pair1_Ra from stat t
-    union all select id, date, player3 player, player4 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
-    union all select id, date, player4 player, player3 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
-    )
-    select player
-         , date
-         , 500 + sum(sum(Ra)) over (partition by player order by date) score -- текущий рейтинг
-         , sum(count(*)) over (partition by player order by date) cnt_game -- сколько игр было сыграно
-      from t1
-      group by player, date
-      order by player, date;'''
+    # Players_daily2_stat = '''with t1 as
+    # ( select id, date, player1 player, player2 partner, pair1_avr_score pair_avr_score, pair1_Ea Ea, pair1_Sa Sa, pair1_Ra Ra from stat t
+    # union all select id, date, player2 player, player1 partner, pair1_avr_score, pair1_Ea, pair1_Sa, pair1_Ra from stat t
+    # union all select id, date, player3 player, player4 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
+    # union all select id, date, player4 player, player3 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
+    # )
+    # select player
+    #      , date
+    #      , 500 + sum(sum(Ra)) over (partition by player order by date) score -- текущий рейтинг
+    #      , sum(count(*)) over (partition by player order by date) cnt_game -- сколько игр было сыграно
+    #   from t1
+    #   group by player, date
+    #   order by player, date;'''
 
-    Players_daily2_stat = '''with d as
+    Players_daily_stat = '''with d as
 ( select distinct date from stat
 ), pl as
 ( select distinct player from (select player1 player from stat union all select player2 from stat union all select player3 from stat union all select player4 from stat)
@@ -260,36 +283,237 @@ select pl.player
 
     from xlsxwriter.workbook import Workbook
     workbook = Workbook('Total_Stat.xlsx')
-    worksheet = workbook.add_worksheet('Total')
-
     conn = create_connection()
     c=conn.cursor()
-    mysel=c.execute(Players_Total_Stat)
+    def_fmt = workbook.add_format({
+        'align': 'center',
+        'valign': 'vcenter',
+        'border': 2
+
+    })
+    head_fmt = workbook.add_format({
+        'bold': True,
+        'align': 'center',
+        'valign': 'vcenter',
+        'border': 2,
+        'color': 'grey'
+    })
+
+
+    worksheet = workbook.add_worksheet('Last-Day')
+    mysel = c.execute(Players_Last_Day_Stat)
+    header = ['Место', 'Игрок', 'Дельта', 'Победы', 'Поражения', 'Win(max/min)', 'Loss(max/min)', 'Всего Игр']
+    for idx, col in enumerate(header):
+        worksheet.write(0, idx, col, head_fmt)  # write the column name one time in a row
+
+    # write all data from SELECT. keep 1 row and 1 column NULL
     for i, row in enumerate(mysel):
         for j, value in enumerate(row):
-            worksheet.write(i, j, value)
+            if isinstance(value, float):
+                value = int(value)
+            worksheet.write(i + 1, j + 1, value, def_fmt)
+
+    worksheet.write_column(1, 0, [i for i in range(1, len(c.execute(Players_Last_Day_Stat).fetchall()) + 1)], head_fmt)  # make and insert column 1 with index
+
+
+
+    worksheet = workbook.add_worksheet('Total')
+    mysel=c.execute(Players_Total_Stat)
+    header = ['Место', 'Игрок', 'Рейтинг', 'Дельта', 'Всего Игр', 'Последняя Игра']
+    for idx, col in enumerate(header):
+        worksheet.write(0, idx, col)  # write the column name one time in a row
+
+    # write all data from SELECT. keep 1 row and 1 column NULL
+    for i, row in enumerate(mysel):
+        for j, value in enumerate(row):
+            if isinstance(value, float):
+                value = int(value)
+            worksheet.write(i + 1, j + 1, value)
+
+    worksheet.write_column(1, 0, [i for i in range(1, len(c.execute(Players_Total_Stat).fetchall()) + 1)])  # make and insert column 1 with index
+
+    # here, we make both 1st column/row bold
+    bold_fmt = workbook.add_format({'bold': True})
+    worksheet.set_row(0, None, bold_fmt)
+    worksheet.set_column(0, 0, None, bold_fmt)
+
 
     worksheet = workbook.add_worksheet('Pair-Win')
     mysel=c.execute(Players_win_pair_stat)
+    header = ['Игрок', 'Партнер', 'Всего Игр', 'Побед', 'Поражений', '% Побед']
+    for idx, col in enumerate(header):
+        worksheet.write(0, idx, col)  # write the column name one time in a row
+
+    # write all data from SELECT. keep 1 row and 1 column NULL
     for i, row in enumerate(mysel):
         for j, value in enumerate(row):
-            worksheet.write(i, j, value)
+            if isinstance(value, float):
+                value = int(value)
+            worksheet.write(i + 1, j, value)
+
+    # worksheet.write_column(1, 0, [i for i in range(1, len(c.execute(Players_win_pair_stat).fetchall()) + 1)])  # make and insert column 1 with index
+
+    # here, we make both 1st column/row bold
+    bold_fmt = workbook.add_format({'bold': True})
+    worksheet.set_row(0, None, bold_fmt)
+    worksheet.set_column(0, 0, None, bold_fmt)
+
 
     worksheet = workbook.add_worksheet('Opponent-Win')
     mysel=c.execute(Players_win_opponent_stat)
+    header = ['Игрок', 'Соперник', 'Всего Игр', 'Побед', 'Поражений', '% Побед']
+    for idx, col in enumerate(header):
+        worksheet.write(0, idx, col)  # write the column name one time in a row
+
+    # write all data from SELECT. keep 1 row and 1 column NULL
     for i, row in enumerate(mysel):
         for j, value in enumerate(row):
-            worksheet.write(i, j, value)
+            if isinstance(value, float):
+                value = int(value)
+            worksheet.write(i + 1, j, value)
+
+    #worksheet.write_column(1, 0, [i for i in range(1, len(c.execute(Players_win_opponent_stat).fetchall()) + 1)])  # make and insert column 1 with index
+
+    # here, we make both 1st column/row bold
+    bold_fmt = workbook.add_format({'bold': True})
+    worksheet.set_row(0, None, bold_fmt)
+    worksheet.set_column(0, 0, None, bold_fmt)
+
 
     worksheet = workbook.add_worksheet('Daily')
     mysel=c.execute(Players_daily_stat)
+    header = ['Игрок', 'Соперник', 'Всего Игр', 'Побед', 'Поражений', '% Побед']
     for i, row in enumerate(mysel):
         for j, value in enumerate(row):
             worksheet.write(i, j, value)
 
-    worksheet = workbook.add_worksheet('Daily2')
-    mysel=c.execute(Players_daily2_stat)
+    # worksheet = workbook.add_worksheet('Daily2')
+    # mysel=c.execute(Players_daily2_stat)
+    # for i, row in enumerate(mysel):
+    #     for j, value in enumerate(row):
+    #         worksheet.write(i, j, value)
+
+
+    workbook.close()
+
+
+def select_stat2():
+
+    Players_Total_Stat = ''' with t1 as
+    ( select id, date, player1 player, player2 partner, pair1_avr_score pair_avr_score, pair1_Ea Ea, pair1_Sa Sa, pair1_Ra Ra from stat t
+    union all select id, date, player2 player, player1 partner, pair1_avr_score, pair1_Ea, pair1_Sa, pair1_Ra from stat t
+    union all select id, date, player3 player, player4 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
+    union all select id, date, player4 player, player3 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
+    ), t2 as
+    ( select t1.*
+           , row_number() over (partition by player order by date desc, id desc) game_rank
+           , rank() over (partition by player order by date desc) date_rank
+        from t1
+    )
+    select player
+         , 500 + sum(Ra) score -- текущий рейтинг
+         , sum(case when date_rank = 1 then Ra end) last_date_Ra -- дельту прироста за последнюю дату
+         , count(*) cnt_game -- сколько игр было сыграно
+      from t2
+      group by player
+      order by sum(Ra) desc;'''
+    from xlsxwriter.workbook import Workbook
+
+    workbook = Workbook('Total_Stat.xlsx')
+    worksheet = workbook.add_worksheet('Total')
+
+    conn = create_connection()
+    c = conn.cursor()
+    mysel = c.execute(Players_Total_Stat)
+
+    header = ['Place', 'Players', 'Score', 'Delta', 'Game']
+    for idx, col in enumerate(header):
+        worksheet.write(0, idx, col)  # <- write the column name one time in a row
+
+    # this was untouched
     for i, row in enumerate(mysel):
         for j, value in enumerate(row):
-            worksheet.write(i, j, value)
+            if isinstance(value, float):
+                value = int(value)
+            worksheet.write(i + 1, j + 1, value)
+
+    worksheet.write_column(1, 0, [i for i in range(1, len(c.execute(Players_Total_Stat).fetchall()) + 1)])  # make an index
+
+    # here, we make both 1st column/row bold
+    workbook.add_format()
+    bold_fmt = workbook.add_format({'bold': True})
+    worksheet.set_row(0, None, bold_fmt)
+    worksheet.set_column(0, 0, None, bold_fmt)
     workbook.close()
+#select_stat2()
+
+
+class Stat_to_Excel:
+
+    workbook = Workbook('Total_Stat.xlsx')
+
+    Players_Last_Day_Stat = '''with t1 as
+    ( select id, date, player1 player, player2 partner, pair1_avr_score pair_avr_score, pair1_Ea Ea, pair1_Sa Sa, pair1_Ra Ra, sign(pair1_Ra) win, sign(case when pair1_Ra > -1 and pair1_Ra < 1 then pair1_Ra end) tie_win from stat t
+    union all select id, date, player2 player, player1 partner, pair1_avr_score, pair1_Ea, pair1_Sa, pair1_Ra, sign(pair1_Ra) win, sign(case when pair1_Ra > -1 and pair1_Ra < 1 then pair1_Ra end) tie_win from stat t
+    union all select id, date, player3 player, player4 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra, sign(pair2_Ra) win, sign(case when pair1_Ra > -1 and pair1_Ra < 1 then pair1_Ra end) tie_win from stat t
+    union all select id, date, player4 player, player3 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra, sign(pair2_Ra) win, sign(case when pair1_Ra > -1 and pair1_Ra < 1 then pair1_Ra end) tie_win from stat t
+    )
+    select player                                                -- игрок
+         , sum(Ra) last_date_Ra                                  -- дельта счета за этот день
+         , count(case when win = 1 then 1 end) cnt_win           -- количество побед
+         , count(case when win = -1 then 1 end) cnt_lost         -- количество поражений
+         , count(case when tie_win = 1 then 1 end) cnt_tie_win   -- количество больше-меньше побед
+         , count(case when tie_win = -1 then 1 end) cnt_tie_lost -- количество больше-меньше поражений
+         , count(*) cnt_game                                     -- количество всего игр 
+      from t1
+      where date = (select max(date) from stat)
+      group by player
+      order by sum(Ra) desc;'''
+
+    Players_Total_Stat = ''' with t1 as
+    ( select id, date, player1 player, player2 partner, pair1_avr_score pair_avr_score, pair1_Ea Ea, pair1_Sa Sa, pair1_Ra Ra from stat t
+    union all select id, date, player2 player, player1 partner, pair1_avr_score, pair1_Ea, pair1_Sa, pair1_Ra from stat t
+    union all select id, date, player3 player, player4 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
+    union all select id, date, player4 player, player3 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
+    ), t2 as
+    ( select t1.*
+           , rank() over (partition by player order by date desc) player_date_rank
+           , rank() over (order by date desc) date_rank
+        from t1
+    )
+    select player                                                -- игрок
+         , 500 + sum(Ra) score                                   -- текущий рейтинг
+         , sum(case when date_rank = 1 then Ra end) last_date_Ra -- дельту прироста за последнюю дату
+         , count(*) cnt_game                                     -- сколько игр было сыграно
+         , max(date) last_date                                   -- датой когда этот игрок играл последний раз
+      from t2
+      group by player
+      order by sum(Ra) desc;'''
+
+    def export_report(self, report, header):
+
+        self.workbook = cls.wo
+        Workbook('Total_Stat.xlsx')
+        conn = create_connection()
+        c = conn.cursor()
+
+        worksheet = workbook.add_worksheet('Last-Day')
+        mysel = c.execute(Players_Last_Day_Stat)
+        header = ['Место', 'Игрок', 'Дельта', 'Победы', 'Поражения', 'Win(max/min)', 'Loss(max/min)', 'Всего Игр']
+        for idx, col in enumerate(header):
+            worksheet.write(0, idx, col)  # write the column name one time in a row
+
+        # write all data from SELECT. keep 1 row and 1 column NULL
+        for i, row in enumerate(mysel):
+            for j, value in enumerate(row):
+                if isinstance(value, float):
+                    value = int(value)
+                worksheet.write(i + 1, j + 1, value)
+
+        worksheet.write_column(1, 0, [i for i in range(1, len(c.execute(
+            Players_Last_Day_Stat).fetchall()) + 1)])  # make and insert column 1 with index
+
+        # here, we make both 1st column/row bold
+        bold_fmt = workbook.add_format({'bold': True})
+        worksheet.set_row(0, None, bold_fmt)
+        worksheet.set_column(0, 0, None, bold_fmt)

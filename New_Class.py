@@ -65,7 +65,7 @@ class Game:
 
     def create_temp_players(self):
         #  Code will check if Players from external file.
-        #  For exist Player - create score from list, for new Player - create default score '500'
+        #  For exist Player - create score from list. If Player not exist in file = new Player - create default score '500'
         #  List of Game Players will keep in Online_Players_Dict
         #  If Player not exist in external file -> add this Player to Temp_Players_Dict
         for i in 1, 2, 3, 4:
