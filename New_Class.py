@@ -106,12 +106,24 @@ class Game:
     def real_score(self, one, two):
         # compare Game score between Pairs and found parameter of the winners (if win = 1, if loose = 0, for 21:23
         # need add 0.2 and update logic later)
-        if 21 <= one > two:
-            return 1
-        elif two > one < 20:
+        # if 21 <= one > two:
+        #     return 1
+        # elif two > one < 20:
+        #     return 0
+        # elif two > one >= 20:
+        #     return 0.2
+        if one>=21 and one>two and two<=10:  #  Побелили через 10
+            return 1.2
+        elif one<two and one<=10:            #  Проиграли через 10
+            return -0.2
+        elif one<two and one<20:             #  Проиграли обычно
             return 0
-        elif two > one >= 20:
+        elif one<two and one>=20:            #  Проиграли на балансе
             return 0.2
+        elif one>two and two>=20:            #  Выйграли на балансе
+            return 0.8
+        elif one>=21 and two<one and two>10: #  Выйграли обычно
+            return 1
 
     def real_score_1(self):
         #  found update Pair1 score what will be used to multiply with Player daily score. 20 - need update later
@@ -136,12 +148,12 @@ class Game:
                 self.player4.name, self.player4.daily_score, self.player4.score, self.score_pair2,
                 self.get_pair_avr_score(self.player3, self.player4), self.wait_score_2(), self.real_score(self.score_pair2, self.score_pair1), self.real_score_2())
         DB_SQLite.insert_stat(stat)
-        # return print('game=', self.date,'\n',self.player1.name, '=', self.player1.daily_score,'current=',self.player1.score,'\n',
-        #              self.player2.name, '=', self.player2.daily_score,'current=',self.player2.score,'\n',
-        #              '  score=',self.score_pair1,'pair_avr=',self.get_pair_avr_score(self.player1, self.player2),'Ea=',self.wait_score_1(),'Sa=',self.real_score(self.score_pair1, self.score_pair2),'Ra=',self.real_score_1(),'\n',
-        #              self.player3.name, '=', self.player3.daily_score,'current=',self.player3.score,'\n',
-        #              self.player4.name, '=', self.player4.daily_score,'current=',self.player4.score,'\n',
-        #              '  score=',self.score_pair2,'pair_avr=',self.get_pair_avr_score(self.player3, self.player4),'Ea=',self.wait_score_2(),'Sa=',self.real_score(self.score_pair2, self.score_pair1),'Ra=',self.real_score_2())
+        return print('game=', self.date,'\n',self.player1.name, '=', self.player1.daily_score,'current=',self.player1.score,'\n',
+                     self.player2.name, '=', self.player2.daily_score,'current=',self.player2.score,'\n',
+                     '  score=',self.score_pair1,'pair_avr=',self.get_pair_avr_score(self.player1, self.player2),'Ea=',self.wait_score_1(),'Sa=',self.real_score(self.score_pair1, self.score_pair2),'Ra=',self.real_score_1(),'\n',
+                     self.player3.name, '=', self.player3.daily_score,'current=',self.player3.score,'\n',
+                     self.player4.name, '=', self.player4.daily_score,'current=',self.player4.score,'\n',
+                     '  score=',self.score_pair2,'pair_avr=',self.get_pair_avr_score(self.player3, self.player4),'Ea=',self.wait_score_2(),'Sa=',self.real_score(self.score_pair2, self.score_pair1),'Ra=',self.real_score_2())
 
     def update_players(self):
         #  this method call Player Class and update current Players score for all Players in this Game
