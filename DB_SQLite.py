@@ -558,6 +558,7 @@ def select_stat2():
 # class Stat_to_Excel:
 #
 #     workbook = Workbook('Total_Stat.xlsx')
+#     db_file = 'list_of_games.db'
 #
 #     Players_Last_Day_Stat = '''with t1 as
 #     ( select id, date, player1 player, player2 partner, pair1_avr_score pair_avr_score, pair1_Ea Ea, pair1_Sa Sa, pair1_Ra Ra, sign(pair1_Ra) win, sign(case when pair1_Ra > -1 and pair1_Ra < 1 then pair1_Ra end) tie_win from stat t
@@ -592,15 +593,28 @@ def select_stat2():
 #          , 500 + sum(Ra) score                                   -- текущий рейтинг
 #          , sum(case when date_rank = 1 then Ra end) last_date_Ra -- дельту прироста за последнюю дату
 #          , count(*) cnt_game                                     -- сколько игр было сыграно
-#          , max(date) last_date                                   -- датой когда этот игрок играл последний раз
+#          , max(date) last_date                                   -- дата когда этот игрок играл последний раз
 #       from t2
 #       group by player
 #       order by sum(Ra) desc;'''
 #
+#     def create_connection():
+#     """ create a database connection to the SQLite database
+#         specified by db_file
+#     :return: Connection object or None
+#     """
+#     db_file = self.db_file
+#     conn = None
+#     try:
+#         conn = sqlite3.connect(db_file)
+#     except Error as e:
+#         print(e)
+#
+#     return conn
+
 #     def export_report(self, report, header):
 #
-#         self.workbook = cls.wo
-#         Workbook('Total_Stat.xlsx')
+#         workbook = self.workbook
 #         conn = create_connection()
 #         c = conn.cursor()
 #

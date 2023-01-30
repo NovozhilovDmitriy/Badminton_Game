@@ -13,7 +13,7 @@ else:
 
 Players_Dict = []
 
-date = '30.01.2023'
+date = '29.01.2023'
 
 DB_SQLite.create_table()
 
