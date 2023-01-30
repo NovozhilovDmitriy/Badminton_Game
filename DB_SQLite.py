@@ -193,25 +193,44 @@ select player
   group by player
   order by sum(Ra) desc;'''
 
-    Players_Total_Stat = ''' with t1 as
+    Players_Total_Stat = ''' with d as
+( select distinct date from stat
+), pl as
+( select player, min(date) min_date from (select date, player1 player from stat union all select date, player2 from stat union all select date, player3 from stat union all select date, player4 from stat) group by player
+), t1 as
 ( select id, date, player1 player, player2 partner, pair1_avr_score pair_avr_score, pair1_Ea Ea, pair1_Sa Sa, pair1_Ra Ra from stat t
 union all select id, date, player2 player, player1 partner, pair1_avr_score, pair1_Ea, pair1_Sa, pair1_Ra from stat t
 union all select id, date, player3 player, player4 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
 union all select id, date, player4 player, player3 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
 ), t2 as
-( select t1.*
-       , rank() over (partition by player order by date desc) player_date_rank
-       , rank() over (order by date desc) date_rank
-    from t1
+( select pl.player
+       , d.date
+       , sum(t1.Ra) last_date_Ra
+       , sum(count(t1.Ra)) over (partition by pl.player order by d.date) cnt_game
+       , max(case when sum(t1.Ra) is not null then d.date end) over (partition by pl.player) player_last_date
+       , 500 + sum(sum(t1.Ra)) over (partition by pl.player order by d.date) score
+       , max(d.date) over () last_date
+    from d cross join pl
+         left outer join t1 on t1.date = d.date and t1.player = pl.player and d.date >= pl.min_date  
+    group by pl.player, d.date
+), t3 as
+( select t2.*
+       , rank() over (partition by date order by score desc) player_rank
+    from t2
+), t4 as
+( select t3.*
+       , lag(player_rank) over (partition by player order by date) lag_player_rank
+    from t3
 )
-select player
-     , 500 + sum(Ra) score -- текущий рейтинг
-     , sum(case when date_rank = 1 then Ra end) last_date_Ra -- дельту прироста за последнюю дату
-     , count(*) cnt_game -- сколько игр было сыграно
-     , max(date) last_date -- датой когда этот игрок играл последний раз
-  from t2
-  group by player
-  order by sum(Ra) desc;'''
+select player                                                     -- игрок
+     , score                                                      -- текущий рейтинг
+     , last_date_Ra                                               -- дельту прироста за последнюю дату
+     , cnt_game                                                   -- сколько игр было сыграно
+     , player_last_date                                           -- датой когда этот игрок играл последний раз
+     , case when lag_player_rank <> player_rank then lag_player_rank-player_rank end diff_rank -- динамика
+  from t4
+  where date = last_date
+  order by score desc;'''
 
     Players_win_pair_stat = '''with t1 as
     ( select id, date, player1 player, player2 partner, pair1_avr_score pair_avr_score, pair1_Ea Ea, pair1_Sa Sa, pair1_Ra Ra, sign(pair1_Ra) win from stat t
@@ -292,7 +311,22 @@ select player
 
     })
 
-    bold_fmt = workbook.add_format({'bold': True})
+    def_fmt_color = workbook.add_format({
+        'align': 'center',
+        'valign': 'vcenter',
+        'border': 2,
+        'num_format': '[Green]General;[Red]-General;General'
+
+    })
+    #def_fmt_color.set_num_format('[Green]General;[Red]-General;General')
+
+    bold_fmt = workbook.add_format({
+        'bold': True,
+        'align': 'center',
+        'valign': 'vcenter',
+        'border': 2
+    })
+    bold_fmt.set_font_size(13)
 
     head_fmt = workbook.add_format({
         'bold': True,
@@ -303,8 +337,14 @@ select player
     head_fmt.set_bg_color('gray')
     head_fmt.set_font_size(14)
 
+    #  Description worksheet creation
+    worksheet = workbook.add_worksheet('Описание')
+    worksheet.insert_image('A1', '1_desc.jpg')
+    worksheet.insert_image('A16', '2_desc.jpg')
+    worksheet.insert_image('A32', '3_desc.jpg')
 
 
+    #  Last-Day worksheet creation
     worksheet = workbook.add_worksheet('Last-Day')
     mysel = c.execute(Players_Last_Day_Stat)
     header = ['Место', 'Игрок', 'Дельта', 'Победы', 'Поражения', 'Win-ma/mi', 'Loss-ma/mi', 'Всего Игр']
@@ -326,21 +366,28 @@ select player
 
     worksheet = workbook.add_worksheet('Total')
     mysel=c.execute(Players_Total_Stat)
-    header = ['Место', 'Игрок', 'Рейтинг', 'Дельта', 'Всего Игр', 'Последняя Игра']
+    header = ['Место', 'Игрок', 'Рейтинг', 'Дельта', 'Всего Игр', 'Последняя Игра', 'Динамика']
     for idx, col in enumerate(header):
         worksheet.write(0, idx, col, head_fmt)  # write the column name one time in a row
 
     # write all data from SELECT. keep 1 row and 1 column NULL
     for i, row in enumerate(mysel):
         for j, value in enumerate(row):
-            if isinstance(value, float):
+            if j == 5:
+                worksheet.write(i + 1, j + 1, value, def_fmt_color)
+            elif j == 0:
+                worksheet.write(i + 1, j + 1, value, bold_fmt)
+
+            elif isinstance(value, float):
                 value = int(value)
-            worksheet.write(i + 1, j + 1, value, def_fmt)
+                worksheet.write(i + 1, j + 1, value, def_fmt)
+            else:
+                worksheet.write(i + 1, j + 1, value, def_fmt)
 
     worksheet.write_column(1, 0, [i for i in range(1, len(c.execute(Players_Total_Stat).fetchall()) + 1)], head_fmt)  # make and insert column 1 with index
 
     worksheet.set_column('B:B', 18)
-    worksheet.set_column('C:E', 11)
+    worksheet.set_column('C:G', 11)
     worksheet.set_column('F:F', 18)
 
 
@@ -392,12 +439,15 @@ select player
     r = 1
     cl = 0
     name = ''
+    dt = ''
     for i, row in enumerate(mysel):
         for j, value in enumerate(row):
-            # if isinstance(value, float):
-            #     value = int(value)
             if j == 0:
-                worksheet.write(r, 0, value)
+                if i == 0:
+                    dt = value
+                    worksheet.write(r, 0, value)
+                if value != dt:
+                    worksheet.write(r, 0, value)
             elif j == 1:
                 if value != name:
                     cl += 1
@@ -415,17 +465,20 @@ select player
     for i in range(cl):
         col = i + 1
         chart.add_series({
-            'name': ['Daily', 0, col],
+            'name': ['Daily', 0, col-1],
             'categories': ['Daily', 1, 0, r, 0],
-            'values': ['Daily', 1, col, r, col],
+            'values': ['Daily', 1, col-1, r, col-1],
         })
 
     # Configure the chart axes.
-    chart.set_x_axis({'name': 'Date'})
-    chart.set_y_axis({'name': 'Value', 'major_gridlines': {'visible': False}})
-
+    chart.set_x_axis({'name': 'дата игры'})
+    chart.set_y_axis({'name': 'Рейтинг'})
+                      #'major_gridlines': {'visible': False}})
+    chart.set_legend({'position': 'top'})
+    chart.show_blanks_as('span')
+    chart.set_size({'width': 1200, 'height': 580})
     # Insert the chart into the worksheet.
-    worksheet.insert_chart('D3', chart)
+    worksheet.insert_chart('C3', chart)
 
     workbook.close()
 
