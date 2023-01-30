@@ -112,17 +112,17 @@ class Game:
         #     return 0
         # elif two > one >= 20:
         #     return 0.2
-        if one>=21 and one>two and two<=10:  #  Побелили через 10
+        if 10 >= two < one >= 21:  #  Побелили через 10
             return 1.2
-        elif one<two and one<=10:            #  Проиграли через 10
+        elif 10 >= one < two:      #  Проиграли через 10
             return -0.2
-        elif one<two and one<20:             #  Проиграли обычно
+        elif 20 > one < two:       #  Проиграли обычно
             return 0
-        elif one<two and one>=20:            #  Проиграли на балансе
+        elif 20 <= one < two:      #  Проиграли на балансе
             return 0.2
-        elif one>two and two>=20:            #  Выйграли на балансе
+        elif one > two >= 20:      #  Выйграли на балансе
             return 0.8
-        elif one>=21 and two<one and two>10: #  Выйграли обычно
+        elif 10 < two < one >= 21: #  Выйграли обычно
             return 1
 
     def real_score_1(self):
