@@ -465,9 +465,9 @@ select player                                                     -- игрок
     for i in range(cl):
         col = i + 1
         chart.add_series({
-            'name': ['Daily', 0, col-1],
-            'categories': ['Daily', 1, 0, r, 0],
-            'values': ['Daily', 1, col-1, r, col-1],
+            'name': ['Daily', 0, col],
+            'categories': ['Daily', 1, 0, r-1, 0],
+            'values': ['Daily', 1, col, r-1, col],
         })
 
     # Configure the chart axes.
