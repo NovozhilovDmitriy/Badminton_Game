@@ -312,14 +312,15 @@ select player                                                     -- игрок
     })
 
     def_fmt_color = workbook.add_format({
+        'bold': True,
         'align': 'center',
         'valign': 'vcenter',
         'border': 2,
-        'num_format': '[Green]General;[Red]-General;General'
+        'num_format': '[Blue]General;[Red]-General;General',
+        'font_size': 14,
+        'bg_color': '#E4E4E4'
 
     })
-    #def_fmt_color.set_num_format('[Green]General;[Red]-General;General')
-
     bold_fmt = workbook.add_format({
         'bold': True,
         'align': 'center',
@@ -334,7 +335,7 @@ select player                                                     -- игрок
         'valign': 'vcenter',
         'border': 2,
     })
-    head_fmt.set_bg_color('gray')
+    head_fmt.set_bg_color('#DEDEDE')
     head_fmt.set_font_size(14)
 
     #  Description worksheet creation
