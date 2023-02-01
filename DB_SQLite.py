@@ -25,7 +25,7 @@ def create_table_game():
     cursor.execute(players_score)
     conn.commit()
     cursor.fetchall()
-    print('Table games and table score created (if not exist)')
+    #print('Table games and table score created (if not exist)')
     cursor.close()
 
 def create_stat_table():
@@ -59,7 +59,7 @@ def create_stat_table():
     cursor.execute(stat_table)
     conn.commit()
     cursor.fetchall()
-    print('Таблица статистики была создана заново')
+    #print('Таблица статистики была создана заново')
     cursor.close()
 
 
@@ -86,7 +86,7 @@ def drop_table_stat(table):
     cur = conn.cursor()
     cur.execute(sql)
     conn.commit()
-    print('Таблица статистики была удалена')
+    #print('Таблица статистики была удалена')
     return cur.lastrowid
 
 

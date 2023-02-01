@@ -5,7 +5,7 @@ side1 = 'Левая площадка'
 class Import_Excel:
 
     def load(file, sheet):
-        Import_Excel.check_sheet(file, sheet)
+        #Import_Excel.check_sheet(file, sheet)
         day_data_excel = pandas.read_excel(file, sheet_name=sheet, header=None)
         json_str = day_data_excel.to_json(orient='records', force_ascii=False)
         test = json.loads(json_str)
@@ -19,9 +19,12 @@ class Import_Excel:
         wb = pandas.read_excel(file, None)
         for i in wb.keys():
             if i == sheet:
-                return i
-        raise ValueError(
-                    'В Excel файле (%s) нет страницы с датой игрового дня (%s). Переименуйте страницу игрового дня в (%s) и запустите программу еще раз' % (file, sheet, sheet))
+                return True
+        else:
+            print()
+            print('!!!!  В Excel файле (%s) нет страницы с датой игрового дня (%s). Переименуйте страницу игрового дня в (%s) и запустите программу еще раз' % (file, sheet, sheet))
+            print()
+            return False
 
     @staticmethod
     def import_excel(test):

@@ -201,4 +201,5 @@ class Day:
             i['score'] = i['score'] + i['daily_score']
             i['daily_score'] = 0
             #print(f"{i['name']}={i['score']}")
-        #print(f'После игрового дня {self.date} статистика', *((i['name'], int(i['score'])) for i in Players_Dict))
+        print(f'После игрового дня {self.date} статистика', *((i['name'], int(i['score'])) for i in Players_Dict))
+        print()
