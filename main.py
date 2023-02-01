@@ -1,5 +1,5 @@
 import DB_SQLite
-from New_Class import Player, Game, Day
+from New_Class import Day
 from input import Import_Excel
 import date
 import os

@@ -1,6 +1,5 @@
 import sqlite3
 from sqlite3 import Error
-from xlsxwriter.workbook import Workbook
 
 import pandas
 
@@ -301,8 +300,10 @@ select player                                                     -- игрок
       group by pl.player, d.date
       order by pl.player, d.date;'''
 
-    from xlsxwriter.workbook import Workbook
-    workbook = Workbook('Total_Stat.xlsx')
+    #from xlsxwriter.workbook import Workbook
+    import xlsxwriter
+
+    workbook = xlsxwriter.Workbook('Total_Stat.xlsx')
     conn = create_connection()
     c=conn.cursor()
     def_fmt = workbook.add_format({

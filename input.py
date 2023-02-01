@@ -1,6 +1,5 @@
 import pandas
 import json
-import DB_SQLite
 
 side1 = 'Левая площадка'
 class Import_Excel:
@@ -12,15 +11,16 @@ class Import_Excel:
         test = json.loads(json_str)
         return test
 
-    def check_none(self, a):
+    def check_none(a):
         if type(a) is not None:
             return a
 
     def check_sheet(file, sheet):
         wb = pandas.read_excel(file, None)
         for i in wb.keys():
-            if not i == sheet:
-                raise ValueError(
+            if i == sheet:
+                return i
+        raise ValueError(
                     'В Excel файле (%s) нет страницы с датой игрового дня (%s). Переименуйте страницу игрового дня в (%s) и запустите программу еще раз' % (file, sheet, sheet))
 
     @staticmethod
