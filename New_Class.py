@@ -70,7 +70,7 @@ class Game:
 
     def print_list_new_player(self, date, temp_dict):
         if len(temp_dict) != 0:
-            print(f'    В этой день ({date}) у нас новый(вые) игрок(и) - ', temp_dict)
+            print(f'+     В этой день ({date}) у нас новый(вые) игрок(и) - ', ", ".join(temp_dict))
         else:
             pass
 
@@ -201,4 +201,4 @@ class Day:
             i['score'] = i['score'] + i['daily_score']
             i['daily_score'] = 0
             #print(f"{i['name']}={i['score']}")
-        print(f'После игрового дня {self.date} статистика', *((i['name'], int(i['score'])) for i in Players_Dict))
+        #print(f'После игрового дня {self.date} статистика', *((i['name'], int(i['score'])) for i in Players_Dict))

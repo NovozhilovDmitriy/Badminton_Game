@@ -5,8 +5,8 @@ from xlsxwriter.workbook import Workbook
 import pandas
 
 
-def create_table():
-    sqlite_connection = sqlite3.connect('list_of_games.db')
+def create_table_game():
+    conn = create_connection()
     games_table = '''CREATE TABLE IF NOT EXISTS games (
                     id INTEGER PRIMARY KEY,
                     date DATE FORMAT 'dd.mm.yyyy' NOT NULL,
@@ -21,16 +21,16 @@ def create_table():
                     name TEXT NOT NULL,
                     score REAL NOT NULL,
                     daily_score REAL NOT NULL);'''
-    cursor = sqlite_connection.cursor()
+    cursor = conn.cursor()
     cursor.execute(games_table)
     cursor.execute(players_score)
-    sqlite_connection.commit()
+    conn.commit()
     cursor.fetchall()
     print('Table games and table score created (if not exist)')
     cursor.close()
 
 def create_stat_table():
-    sqlite_connection = sqlite3.connect('list_of_games.db')
+    conn = create_connection()
     stat_table = '''CREATE TABLE IF NOT EXISTS stat (
                         id INTEGER PRIMARY KEY,
                         date DATE FORMAT 'dd.mm.yyyy' NOT NULL,
@@ -56,11 +56,11 @@ def create_stat_table():
                         pair2_Ea REAL NOT NULL,
                         pair2_Sa REAL NOT NULL,
                         pair2_Ra REAL NOT NULL);'''
-    cursor = sqlite_connection.cursor()
+    cursor = conn.cursor()
     cursor.execute(stat_table)
-    sqlite_connection.commit()
+    conn.commit()
     cursor.fetchall()
-    print('Таблица статистики была создана заного')
+    print('Таблица статистики была создана заново')
     cursor.close()
 
 
