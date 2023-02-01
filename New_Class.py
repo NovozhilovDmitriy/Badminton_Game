@@ -55,10 +55,24 @@ class Game:
                 i['daily_score'] = self.players[3].daily_score
 
     def extend_players_dict(self, dict):
-        #  added all new players (name and current score) of current Game to argement list
+        #  added all new players (name and current score) of current Game to argument list
         #  This method should execute after Day, not after each Game.
         dict.extend(self.Temp_Players_Dict)
 
+    def list_daily_new_player(self, temp_dict):
+        #  List players what not exist in previous games statistics
+        if len(self.Temp_Players_Dict) != 0:
+            for i in self.Temp_Players_Dict:
+                 temp_dict.append(i['name'])
+            return temp_dict
+        else:
+            pass
+
+    def print_list_new_player(self, date, temp_dict):
+        if len(temp_dict) != 0:
+            print(f'    В этой день ({date}) у нас новый(вые) игрок(и) - ', temp_dict)
+        else:
+            pass
 
     def create_temp_players(self):
         #  Code will check if Players from external file.
@@ -173,15 +187,18 @@ class Day:
         self.list_of_games = games
 
     def start_games_counting(self, Players_Dict):
+        temp_dict = []
         for i in self.list_of_games:
             self.game = Game(i['player1'], i['player2'], i['player3'], i['player4'], i['score1'], i['score2'])
             self.game.import_players(Players_Dict)  # this is for each game
-            self.game.create_temp_players()  # this is for each game
-            self.game.set_daily_score(self.date)  # this is after each game
+            self.game.create_temp_players()         # this is for each game
+            self.game.set_daily_score(self.date)    # this is after each game
+            self.game.list_daily_new_player(temp_dict)            # Сохраняю имена всех игроков которых нет в предыдущей статистике.
             self.game.extend_players_dict(Players_Dict)
             self.game.update_daily_score_in_dict(Players_Dict)
-        for i in Players_Dict:
+        self.game.print_list_new_player(self.date, temp_dict)  # Печатаю всех новых игроков за этот игровой день
+        for i in Players_Dict:   # Update score in Players_Dict after each day of games. Mandatory.
             i['score'] = i['score'] + i['daily_score']
             i['daily_score'] = 0
             #print(f"{i['name']}={i['score']}")
-        print(f'After full {self.date}', *((i['name'], int(i['score'])) for i in Players_Dict))
+        print(f'После игрового дня {self.date} статистика', *((i['name'], int(i['score'])) for i in Players_Dict))

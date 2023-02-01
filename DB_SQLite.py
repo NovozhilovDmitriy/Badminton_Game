@@ -60,7 +60,7 @@ def create_stat_table():
     cursor.execute(stat_table)
     sqlite_connection.commit()
     cursor.fetchall()
-    print('Table stat created (if not exist)')
+    print('Таблица статистики была создана заного')
     cursor.close()
 
 
@@ -87,6 +87,7 @@ def drop_table_stat(table):
     cur = conn.cursor()
     cur.execute(sql)
     conn.commit()
+    print('Таблица статистики была удалена')
     return cur.lastrowid
 
 
