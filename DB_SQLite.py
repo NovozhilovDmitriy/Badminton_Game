@@ -89,6 +89,15 @@ def drop_table_stat(table):
     #print('Таблица статистики была удалена')
     return cur.lastrowid
 
+def del_games_from_db(date):
+    conn = create_connection()
+    sql = f"""DELETE FROM games WHERE date = '{date}'"""
+
+    cur = conn.cursor()
+    cur.execute(sql)
+    conn.commit()
+    #print(f'!!!!   Все игры за {date} число удалены. Можете загружать повторно. ')
+    return cur.lastrowid
 
 def insert_games(task):
     """

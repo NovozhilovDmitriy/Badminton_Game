@@ -14,7 +14,7 @@ def data_analyse():
     excel_file = read_config('excel_file')
 
     # Input date for new game and validate format of this date
-    date = date_select.date_select()
+    date = date_select.date_input()
 
     #date = '31.01.2023'
 
@@ -38,6 +38,7 @@ def data_analyse():
     #  If no this date in DB table="games" - import. If exist - pass
     if DB_SQLite.check_date(date):
         print(f'!   В базе нет игр за ({date}) дату. Эти игры будут добавлены из Excel файла ({excel_file}) страница ({date})')
+        print()
         if Import_Excel.check_sheet(excel_file, date):
             games = Import_Excel.load(excel_file, date)  #  Convert excel to dict
             games = Import_Excel.import_excel(games)              #  Load dict to Players dict format
@@ -45,6 +46,7 @@ def data_analyse():
                 DB_SQLite.insert_games([date, i['player1'], i['player2'], i['player3'], i['player4'], i['score1'], i['score2']])
     else:
         print(f'!   В базе уже есть игры за ({date}) дату. Игры из из Excel файла ({excel_file}) не будут учитываться')
+        print()
 
     #  drop stat table, create stat table
     DB_SQLite.drop_table_stat('stat')
@@ -61,6 +63,17 @@ def data_analyse():
     DB_SQLite.select_stat1()
 
     #input()
+
+def date_games_delete():
+    #  Delete games from DB with special date
+    date = date_select.date_input()
+
+    if DB_SQLite.check_date(date):
+        print(f'!!!!   В базе нет игр за ({date}) дату.')
+    else:
+        DB_SQLite.del_games_from_db(date)
+        print(f'!!!!   Все игры за ({date}) дату удалены из базы')
+
 
 
 def read_config(conf_data):
@@ -90,12 +103,13 @@ if __name__ == '__main__':
     print('         добавлено неправильное имя игрока либо счет или возникла какая либо ошибка в ходе выполнения пункта 1')
     print('Выбрав пункт 0 - Вы закроете программу. Все операции, которые были выполнены до этого, будут сохранены')
     print()
-    print('version 02.02.2023')
+    print('version 03.02.2023')
     print('--------------------------------------------------------------------------------------------------------')
     print()
 
 
     while True:
+        print()
         print('    Главное Меню ')
         print('1.  Ввод данных и расчет рейтинга')
         print('2.  Редактирование базы игр (удаление игрового дня)')
@@ -109,14 +123,7 @@ if __name__ == '__main__':
         elif cmd == '1':
             data_analyse()
         elif cmd == '2':
-            print()
-            print('В разработке......')
-            print()
-            # print(read_config('excel_file'))
-            # print(read_config('ch_start'))
-            # print(read_config('ch_end'))
-            pass
-
+            date_games_delete()
         else:
             print()
             print('Попробуйте еще раз')

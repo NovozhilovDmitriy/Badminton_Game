@@ -9,10 +9,10 @@ def validate_date_format(date):
         print(f'Формат даты должен быть "ДД.ММ.ГГГГ", вы ввели "{date}"')
         return False
 
-def date_select():
+def date_input():
     while True:
         print()
-        game_date = input("Введите дату игры, которую хотите добавить в статистику. Формат ДД.ММ.ГГГГ :")
+        game_date = input("Введите дату игр для обновления статистики. Формат ДД.ММ.ГГГГ :")
         if validate_date_format(game_date):
             break
         print('Повторите ввод')
