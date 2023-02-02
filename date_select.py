@@ -11,6 +11,7 @@ def validate_date_format(date):
 
 def date_select():
     while True:
+        print()
         game_date = input("Введите дату игры, которую хотите добавить в статистику. Формат ДД.ММ.ГГГГ :")
         if validate_date_format(game_date):
             break
