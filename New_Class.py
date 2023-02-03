@@ -140,20 +140,27 @@ class Game:
         self.players[1].set_daily_score(self.real_score_1())
         self.players[2].set_daily_score(self.real_score_2())
         self.players[3].set_daily_score(self.real_score_2())
-        stat = (self.date,
-                self.players[0].name, self.players[0].daily_score, self.players[0].score,
-                self.players[1].name, self.players[1].daily_score, self.players[1].score, self.score_pair1,
-                self.get_pair_avr_score(self.players[0], self.players[1]), self.wait_score_1(), self.real_score(self.score_pair1, self.score_pair2), self.real_score_1(),
-                self.players[2].name, self.players[2].daily_score, self.players[2].score,
-                self.players[3].name, self.players[3].daily_score, self.players[3].score, self.score_pair2,
-                self.get_pair_avr_score(self.players[2], self.players[3]), self.wait_score_2(), self.real_score(self.score_pair2, self.score_pair1), self.real_score_2())
-        DB_SQLite.insert_stat(stat)
+        self.choose_user_data_to_DB(date)
         # return print('game=', self.date,'\n',self.players[0].name, '=', self.players[0].daily_score,'current=',self.players[0].score,'\n',
         #              self.players[1].name, '=', self.players[1].daily_score,'current=',self.players[1].score,'\n',
         #              '  score=',self.score_pair1,'pair_avr=',self.get_pair_avr_score(self.players[0], self.players[1]),'Ea=',self.wait_score_1(),'Sa=',self.real_score(self.score_pair1, self.score_pair2),'Ra=',self.real_score_1(),'\n',
         #              self.players[2].name, '=', self.players[2].daily_score,'current=',self.players[2].score,'\n',
         #              self.players[3].name, '=', self.players[3].daily_score,'current=',self.players[3].score,'\n',
         #              '  score=',self.score_pair2,'pair_avr=',self.get_pair_avr_score(self.players[2], self.players[3]),'Ea=',self.wait_score_2(),'Sa=',self.real_score(self.score_pair2, self.score_pair1),'Ra=',self.real_score_2())
+
+    def choose_user_data_to_DB(self, date):
+        self.date = date
+        stat = (self.date,
+                self.players[0].name, self.players[0].daily_score, self.players[0].score,
+                self.players[1].name, self.players[1].daily_score, self.players[1].score, self.score_pair1,
+                self.get_pair_avr_score(self.players[0], self.players[1]), self.wait_score_1(),
+                self.real_score(self.score_pair1, self.score_pair2), self.real_score_1(),
+                self.players[2].name, self.players[2].daily_score, self.players[2].score,
+                self.players[3].name, self.players[3].daily_score, self.players[3].score, self.score_pair2,
+                self.get_pair_avr_score(self.players[2], self.players[3]), self.wait_score_2(),
+                self.real_score(self.score_pair2, self.score_pair1), self.real_score_2())
+        DB_SQLite.insert_stat(stat)
+
 
     def update_players(self):
         #  this method call Player Class and update current Players score for all Players in this Game

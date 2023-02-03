@@ -1,3 +1,4 @@
+import shutil
 import sqlite3
 from sqlite3 import Error
 
@@ -8,7 +9,7 @@ def create_table_game():
     conn = create_connection()
     games_table = '''CREATE TABLE IF NOT EXISTS games (
                     id INTEGER PRIMARY KEY,
-                    date DATE FORMAT 'dd.mm.yyyy' NOT NULL,
+                    date TEXT NOT NULL,
                     player1 TEXT NOT NULL,
                     player2 TEXT NOT NULL,
                     player3 TEXT NOT NULL,
@@ -32,7 +33,7 @@ def create_stat_table():
     conn = create_connection()
     stat_table = '''CREATE TABLE IF NOT EXISTS stat (
                         id INTEGER PRIMARY KEY,
-                        date DATE FORMAT 'dd.mm.yyyy' NOT NULL,
+                        date TEXT NOT NULL,
                         player1 TEXT NOT NULL,
                         pl1_sum_daily_score REAL NOT NULL,
                         pl1_current_score REAL NOT NULL,
@@ -40,6 +41,9 @@ def create_stat_table():
                         pl2_sum_daily_score REAL NOT NULL,
                         pl2_current_score REAL NOT NULL,
                         socre1 INTEGER NOT NULL,
+                        win_lose1 INTEGER NOT NULL,
+                        max_min1 INTEGER NOT NULL,
+                        more10_1 INTEGER NOT NULL,
                         pair1_avr_score REAL NOT NULL,
                         pair1_Ea REAL NOT NULL,
                         pair1_Sa REAL NOT NULL,
@@ -51,6 +55,9 @@ def create_stat_table():
                         pl4_sum_daily_score REAL NOT NULL,
                         pl4_current_score REAL NOT NULL,
                         socre2 INTEGER NOT NULL,
+                        win_lose2 INTEGER NOT NULL,
+                        max_min2 INTEGER NOT NULL,
+                        more10_2 INTEGER NOT NULL,
                         pair2_avr_score REAL NOT NULL,
                         pair2_Ea REAL NOT NULL,
                         pair2_Sa REAL NOT NULL,
@@ -164,7 +171,8 @@ def check_date(date):
 def table_date_list():
     # create a database connection
     conn = create_connection()
-    sql = ''' select distinct date from games order by date asc; '''
+#    sql = ''' select distinct date from games order by date asc; '''
+    sql = ''' select distinct date from games order by strftime('%s', date); '''
     conn.row_factory = lambda cursor, row: row[0]
     cur = conn.cursor()
     cur.execute(sql)
@@ -348,6 +356,7 @@ select player                                                     -- игрок
     })
     head_fmt.set_bg_color('#DEDEDE')
     head_fmt.set_font_size(14)
+
 
     #  Description worksheet creation
     worksheet = workbook.add_worksheet('Описание')
