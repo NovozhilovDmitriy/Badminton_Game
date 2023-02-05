@@ -40,7 +40,7 @@ def create_stat_table():
                         player2 TEXT NOT NULL,
                         pl2_sum_daily_score REAL NOT NULL,
                         pl2_current_score REAL NOT NULL,
-                        socre1 INTEGER NOT NULL,
+                        score1 INTEGER NOT NULL,
                         win_lose1 INTEGER NOT NULL,
                         max_min1 INTEGER NOT NULL,
                         more10_1 INTEGER NOT NULL,
@@ -54,7 +54,7 @@ def create_stat_table():
                         player4 TEXT NOT NULL,
                         pl4_sum_daily_score REAL NOT NULL,
                         pl4_current_score REAL NOT NULL,
-                        socre2 INTEGER NOT NULL,
+                        score2 INTEGER NOT NULL,
                         win_lose2 INTEGER NOT NULL,
                         max_min2 INTEGER NOT NULL,
                         more10_2 INTEGER NOT NULL,
@@ -129,11 +129,13 @@ def insert_stat(task):
 
     sql = ''' INSERT INTO stat(date,player1,pl1_sum_daily_score,pl1_current_score,
                                     player2,pl2_sum_daily_score,pl2_current_score,
-                            socre1,pair1_avr_score,pair1_Ea,pair1_Sa,pair1_Ra,
+                                    score1,win_lose1,max_min1,more10_1, 
+                            pair1_avr_score,pair1_Ea,pair1_Sa,pair1_Ra,
                                     player3,pl3_sum_daily_score,pl3_current_score,
                                     player4,pl4_sum_daily_score,pl4_current_score,
-                            socre2,pair2_avr_score,pair2_Ea,pair2_Sa,pair2_Ra)
-              VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) '''
+                                    score2,win_lose2,max_min2,more10_2,
+                            pair2_avr_score,pair2_Ea,pair2_Sa,pair2_Ra)
+              VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) '''
 
     cur = conn.cursor()
     cur.execute(sql, task)
