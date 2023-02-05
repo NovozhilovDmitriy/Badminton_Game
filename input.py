@@ -1,5 +1,7 @@
 import pandas
 import json
+import time
+import os
 
 side1 = 'Левая площадка'
 
@@ -25,9 +27,9 @@ class Import_Excel:
         else:
             print()
             print(
-                '!!!!  В Excel файле (%s) нет страницы с датой игрового дня (%s). Переименуйте страницу игрового дня в (%s) и запустите программу еще раз' % (
-                file, sheet, sheet))
+                '!!!!  В Excel файле (%s) не найдена страница с именем (%s) для этого игрового дня. Статистика будет пересчитана без учета этих данных' % (file, sheet))
             print()
+            time.sleep(3)
             return False
 
     @staticmethod

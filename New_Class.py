@@ -226,5 +226,8 @@ class Day:
             i['score'] = i['score'] + i['daily_score']
             i['daily_score'] = 0
             #print(f"{i['name']}={i['score']}")
-        print(f'После игрового дня {self.date} статистика', *((i['name'], int(i['score'])) for i in Players_Dict))
+        count_games = DB_SQLite.count_games_in_day_from_db(self.date)
+        print(f'В этот игровой день ({self.date}) было ({count_games[0]}) игр.')
+        #print(f'В этот игровой день ({self.date}) было ({count_games[0]}) игр. Игроки: ', *(i['name'] for i in Players_Dict),',')
+        #print(f'После игрового дня {self.date} статистика', *((i['name'], int(i['score'])) for i in Players_Dict))
         print()

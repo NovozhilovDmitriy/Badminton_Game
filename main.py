@@ -1,3 +1,5 @@
+import time
+
 import DB_SQLite
 from New_Class import Day
 from input import Import_Excel
@@ -25,10 +27,24 @@ def data_analyse():
     stat_file = 'Total_Stat.xlsx'
 
     #  Check if report file exist -> delete. If not exist -> will generate new one later
-    if os.path.exists((stat_file)):
+    if os.path.exists(stat_file):
         print(f'Excel файл статистики ({stat_file}) найден и будет удален...')
-        os.remove(stat_file)
-        #print(f'Excel файл стастики ({stat_file}) удален...')
+        while True:
+            try:
+                os.remove(stat_file)
+                #temp = os.open(stat_file, os.O_RDONLY)
+                #os.close(temp)
+                #print('try delete file')
+            except OSError:
+                print(f'Excel файл статистики ({stat_file}) в данный момент открыт и не может быть удален программой. Зайкройте файл и повторите операцию')
+                input('Нажмите ENTER как будете готовы повторить попытку удаления файла......')
+                print('Проверяем........')
+            else:
+                #os.close(temp)
+                #os.remove(stat_file)
+                print(f'Excel файл стастики ({stat_file}) удален...')
+                break
+
     else:
         print(f'Excel файл статистики ({stat_file}) не найден и будет создан')
 
@@ -37,16 +53,20 @@ def data_analyse():
 
     #  If no this date in DB table="games" - import. If exist - pass
     if DB_SQLite.check_date(date):
+        print()
         print(f'!   В базе нет игр за ({date}) дату. Эти игры будут добавлены из Excel файла ({excel_file}) страница ({date})')
         print()
+        time.sleep(4)
         if Import_Excel.check_sheet(excel_file, date):
             games = Import_Excel.load(excel_file, date)  #  Convert excel to dict
             games = Import_Excel.import_excel(games)              #  Load dict to Players dict format
             for i in games:                                       #  insert all new games to DB table
                 DB_SQLite.insert_games([date, i['player1'], i['player2'], i['player3'], i['player4'], i['score1'], i['score2']])
     else:
+        print()
         print(f'!   В базе уже есть игры за ({date}) дату. Игры из из Excel файла ({excel_file}) не будут учитываться')
         print()
+        time.sleep(3)
 
     #  drop stat table, create stat table
     DB_SQLite.drop_table_stat('stat')
@@ -71,8 +91,9 @@ def date_games_delete():
     if DB_SQLite.check_date(date):
         print(f'!!!!   В базе нет игр за ({date}) дату.')
     else:
+        count = DB_SQLite.count_games_in_day_from_db(date)
         DB_SQLite.del_games_from_db(date)
-        print(f'!!!!   Все игры за ({date}) дату удалены из базы')
+        print(f'!!!!   Из базы было удалено ({count[0]}) игр за ({date}) дату')
 
 
 

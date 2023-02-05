@@ -96,6 +96,16 @@ def drop_table_stat(table):
     #print('Таблица статистики была удалена')
     return cur.lastrowid
 
+def count_games_in_day_from_db(date):
+    #  counting how many games in special date already in DB table state
+    conn = create_connection()
+    sql = f"""SELECT count(*) FROM games WHERE date = '{date}'"""
+
+    cur = conn.cursor()
+    cur.execute(sql)
+    conn.commit()
+    return cur.fetchone()
+
 def del_games_from_db(date):
     conn = create_connection()
     sql = f"""DELETE FROM games WHERE date = '{date}'"""
