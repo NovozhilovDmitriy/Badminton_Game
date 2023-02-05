@@ -29,20 +29,17 @@ def data_analyse():
     #  Check if report file exist -> delete. If not exist -> will generate new one later
     if os.path.exists(stat_file):
         print(f'Excel файл статистики ({stat_file}) найден и будет удален...')
-        while True:
+        while True:  #  Check if file is open. Loop waiting close file.
             try:
                 os.remove(stat_file)
-                #temp = os.open(stat_file, os.O_RDONLY)
-                #os.close(temp)
-                #print('try delete file')
             except OSError:
-                print(f'Excel файл статистики ({stat_file}) в данный момент открыт и не может быть удален программой. Зайкройте файл и повторите операцию')
+                print(f'!!!!      Excel  файл  статистики  ({stat_file})  в  данный  момент  ОТКРЫТ')
+                print(' !!!!      и не может быть удален программой. Зайкройте файл и повторите операцию')
                 input('Нажмите ENTER как будете готовы повторить попытку удаления файла......')
                 print('Проверяем........')
+                print()
             else:
-                #os.close(temp)
-                #os.remove(stat_file)
-                print(f'Excel файл стастики ({stat_file}) удален...')
+                print(f'Excel файл статистики ({stat_file}) удален...')
                 break
 
     else:
@@ -54,17 +51,19 @@ def data_analyse():
     #  If no this date in DB table="games" - import. If exist - pass
     if DB_SQLite.check_date(date):
         print()
-        print(f'!   В базе нет игр за ({date}) дату. Эти игры будут добавлены из Excel файла ({excel_file}) страница ({date})')
+        print(f'!   В базе нет игр за ({date}) дату.')
+        print(f'!   Эти игры будут добавлены из Excel файла ({excel_file}) страница ({date})')
         print()
         time.sleep(4)
         if Import_Excel.check_sheet(excel_file, date):
-            games = Import_Excel.load(excel_file, date)  #  Convert excel to dict
+            games = Import_Excel.load(excel_file, date)           #  Convert excel to dict
             games = Import_Excel.import_excel(games)              #  Load dict to Players dict format
             for i in games:                                       #  insert all new games to DB table
                 DB_SQLite.insert_games([date, i['player1'], i['player2'], i['player3'], i['player4'], i['score1'], i['score2']])
     else:
         print()
-        print(f'!   В базе уже есть игры за ({date}) дату. Игры из из Excel файла ({excel_file}) не будут учитываться')
+        print(f'!   В базе уже есть игры за ({date}) дату.')
+        print(f'!   Игры из из Excel файла ({excel_file}) не будут учитываться')
         print()
         time.sleep(3)
 
@@ -72,7 +71,7 @@ def data_analyse():
     DB_SQLite.drop_table_stat('stat')
     DB_SQLite.create_stat_table()
 
-    #  Load oldest day games from DB table to dict and process it. Do it for each next day from table.
+    #  Load the oldest day games from DB table to dict and process it. Do it for each next day from table.
     queue = DB_SQLite.table_date_list()
     for i in queue:
         games = DB_SQLite.export_one_day_games(i)
@@ -82,7 +81,6 @@ def data_analyse():
     #  Generate all Statistics Excel report
     DB_SQLite.select_stat1()
 
-    #input()
 
 def date_games_delete():
     #  Delete games from DB with special date
@@ -114,18 +112,27 @@ if __name__ == '__main__':
 
     print()
     print()
-    print('Программа для расчета рейтинга игроков и вычисления победителя по количеству побед в турнирный период')
-    print('---------------------------------------------------------------------------------------------------------')
-    print('Выбрав пункт 1 - Программа будет расчитывать рейтинг игроков. Игры заносятся по дням из Excel файл с именем ', read_config('excel_file'))
-    print('         Для корректной работы программы Excel файл должен быть шаблоном растановок игр (смотрите шаблон ', read_config('excel_file'))
-    print('         Имя листа в Excel файле должно быть ДАТОЙ игры. Вводимая дата для анализа должна совпадать с именем листа в Excel файле')
-    print('         Даты можно вводить в любом порядке, если необходимо обработать несколько дней. Но корректный результат будет после добавления всех дат')
-    print('Выбрав пункт 2 - Вы можете удалить из базы игр любой день указав дату. Это может быть неоходимо если при добавлении ирг шаблоном было')
-    print('         добавлено неправильное имя игрока либо счет или возникла какая либо ошибка в ходе выполнения пункта 1')
-    print('Выбрав пункт 0 - Вы закроете программу. Все операции, которые были выполнены до этого, будут сохранены')
+    print('                  ПРОГРАММА ДЛЯ РАСЧЕТА РЕЙТИНГА ИГРОКОВ И ')
+    print('        ВЫЧИСЛЕНИЯ ПОБЕДИТЕЛЯ ПО КОЛИЧЕСТВУ ПОБЕД В ТУРНИРНЫЙ ПЕРИОД')
+    print('---------------------------------------------------------------------------------')
+    print('Выбрав пункт 1 - Программа  будет расчитывать рейтинг игроков.  Игры заносятся по')
+    print('               дням из Excel файла с именем ', read_config('excel_file'))
+    print('                 Для корректной  работы программы Excel файл должен быть шаблоном')
+    print('               расстановок игр (смотрите шаблон ', read_config('excel_file'), ')')
+    print('                 Имя  листа в Excel файле должно быть  ДАТОЙ  игры. Вводимая дата')
+    print('               для анализа  должна  совпадать с именем  листа в Excel файле. Даты')
+    print('               можно  добавлять  в  любой   последовательности,  если  необходимо')
+    print('               обработать несколько дней. Окончательный результат игр будет после')
+    print('               добавления всех дат')
+    print('Выбрав пункт 2 - Вы  можете  удалить из базы игры за любой  день указав дату. Это')
+    print('               может быть  неоходимо,  если  при  добавлении  игр  шаблоном  было')
+    print('               добавлено   неправильное   имя   игрока  или  счет,  или  возникла')
+    print('               какая-либо ошибка в ходе выполнения пункта 1')
+    print('Выбрав пункт 0 - Выход  из  программы.  Все  операции,  которые были выполнены до')
+    print('               этого, будут сохранены')
     print()
-    print('version 05.02.2023')
-    print('--------------------------------------------------------------------------------------------------------')
+    print('               version 06.02.2023')
+    print('------------------- -------------------------------------------------------------')
     print()
 
 

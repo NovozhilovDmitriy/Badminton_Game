@@ -26,10 +26,10 @@ class Import_Excel:
                 return True
         else:
             print()
-            print(
-                '!!!!  В Excel файле (%s) не найдена страница с именем (%s) для этого игрового дня. Статистика будет пересчитана без учета этих данных' % (file, sheet))
+            print('!!!!  В Excel файле (%s) не найдена страница с именем (%s) для этого игрового дня.' % (file, sheet))
+            print('      Статистика будет пересчитана без учета этих данных')
             print()
-            time.sleep(3)
+            time.sleep(4)
             return False
 
     @staticmethod
