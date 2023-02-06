@@ -8,6 +8,7 @@ side1 = 'Левая площадка'
 
 class Import_Excel:
 
+    @staticmethod
     def load(file, sheet):
         # Import_Excel.check_sheet(file, sheet)
         day_data_excel = pandas.read_excel(file, sheet_name=sheet, header=None)
@@ -15,10 +16,12 @@ class Import_Excel:
         test = json.loads(json_str)
         return test
 
+    @staticmethod
     def check_none(a):
         if type(a) is not None:
             return a
 
+    @staticmethod
     def check_sheet(file, sheet):
         wb = pandas.read_excel(file, None)
         for i in wb.keys():
@@ -32,6 +35,7 @@ class Import_Excel:
             time.sleep(4)
             return False
 
+    @staticmethod
     def check_file_exist(file, sheet):
         if os.path.exists(file):
             Import_Excel.check_sheet(file, sheet)

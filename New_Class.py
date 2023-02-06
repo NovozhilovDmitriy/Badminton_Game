@@ -67,8 +67,8 @@ class Game:
             return temp_dict
         else:
             pass
-
-    def print_list_new_player(self, date, temp_dict):
+    @staticmethod
+    def print_list_new_player(date, temp_dict):
         if len(temp_dict) != 0:
             print(f'+     В этой день ({date}) у нас новый(вые) игрок(и) - ', ", ".join(temp_dict))
         else:
@@ -92,6 +92,7 @@ class Game:
                     self.Online_Players_Dict.append(a)
                     self.Temp_Players_Dict.append(a)
 
+
     def get_pair_avr_score(self, pl_1, pl_2):
         #  Count average score of the pairs by formula (score1+score2)/2
         return (pl_1.score + pl_2.score) / 2
@@ -109,7 +110,8 @@ class Game:
                 self.get_pair_avr_score(self.players[2], self.players[3]) - self.get_pair_avr_score(self.players[0],
                                                                                               self.players[1])) / 100))
 
-    def real_score(self, one, two):
+    @staticmethod
+    def real_score(one, two):
         # compare Game score between Pairs and found parameter of the winners (if win = 1, if loose = 0, for 21:23
         # need add 0.2 and update logic later)
         if 10 >= two < one >= 21:  #  Побелили через 10
@@ -125,6 +127,7 @@ class Game:
         elif 10 < two < one >= 21: #  Выйграли обычно
             return 1
 
+
     def real_score_1(self):
         #  found update Pair1 score what will be used to multiply with Player daily score. 20 - need update later
         return 20 * (self.real_score(self.score_pair1, self.score_pair2) - self.wait_score_1())
@@ -133,7 +136,8 @@ class Game:
         #  found update Pair2 score what will be used to multiply with Player daily score. 20 - need update later
         return 20 * (self.real_score(self.score_pair2, self.score_pair1) - self.wait_score_2())
 
-    def win_lose_max_min(self, score1, score2):
+    @staticmethod
+    def win_lose_max_min(score1, score2):
         temp = [0, 0, 0]
         if score1 > score2:  # Who win = 1, who lose = 0
             temp[0] = 1
