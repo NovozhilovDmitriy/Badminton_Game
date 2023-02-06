@@ -32,6 +32,14 @@ class Import_Excel:
             time.sleep(4)
             return False
 
+    def check_file_exist(file, sheet):
+        if os.path.exists(file):
+            Import_Excel.check_sheet(file, sheet)
+        else:
+            print()
+            print('!!!!  Excel файл (%s) не найден. Статистика будет пересчитана без учета этих данных.' % (file))
+            print()
+
     @staticmethod
     def import_excel(test):
         temp_players = []

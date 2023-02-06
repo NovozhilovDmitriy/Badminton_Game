@@ -55,7 +55,10 @@ def data_analyse():
         print(f'!   Эти игры будут добавлены из Excel файла ({excel_file}) страница ({date})')
         print()
         time.sleep(4)
-        if Import_Excel.check_sheet(excel_file, date):
+
+
+       # if Import_Excel.check_sheet(excel_file, date):
+        if Import_Excel.check_file_exist(excel_file, date):
             games = Import_Excel.load(excel_file, date)           #  Convert excel to dict
             games = Import_Excel.import_excel(games)              #  Load dict to Players dict format
             for i in games:                                       #  insert all new games to DB table
