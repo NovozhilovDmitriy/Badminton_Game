@@ -1,7 +1,7 @@
 import shutil
 import sqlite3
 from sqlite3 import Error
-
+from main import read_config
 import pandas
 
 
@@ -206,35 +206,76 @@ def export_one_day_games(date):
         list.append({k: item[k] for k in item.keys()})
     return list
 
+def create_view_table():
+    conn = create_connection()
+    sql = ''' create view if not exists v_player_stat as
+            select id, date, player1 player, player2 partner, pair1_avr_score pair_avr_score, pair1_Ea Ea, pair1_Sa Sa, pair1_Ra Ra, win_lose1 win_lose, max_min1 max_min, more10_1 more10 from stat t
+            union all select id, date, player2 player, player1 partner, pair1_avr_score, pair1_Ea, pair1_Sa, pair1_Ra, win_lose1 win_lose, max_min1 max_min, more10_1 more10  from stat t
+            union all select id, date, player3 player, player4 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra, win_lose2 win_lose, max_min2 max_min, more10_2 more10  from stat t
+            union all select id, date, player4 player, player3 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra, win_lose2 win_lose, max_min2 max_min, more10_2 more10 from stat t;'''
+
+    cur = conn.cursor()
+    cur.execute(sql)
+    conn.commit()
+    return cur.lastrowid
+
 def select_stat1():
 
-    Players_Last_Day_Stat = '''with t1 as
-( select id, date, player1 player, player2 partner, pair1_avr_score pair_avr_score, pair1_Ea Ea, pair1_Sa Sa, pair1_Ra Ra, sign(pair1_Ra) win, sign(case when pair1_Ra > -1 and pair1_Ra < 1 then pair1_Ra end) tie_win from stat t
-union all select id, date, player2 player, player1 partner, pair1_avr_score, pair1_Ea, pair1_Sa, pair1_Ra, sign(pair1_Ra) win, sign(case when pair1_Ra > -1 and pair1_Ra < 1 then pair1_Ra end) tie_win from stat t
-union all select id, date, player3 player, player4 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra, sign(pair2_Ra) win, sign(case when pair1_Ra > -1 and pair1_Ra < 1 then pair1_Ra end) tie_win from stat t
-union all select id, date, player4 player, player3 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra, sign(pair2_Ra) win, sign(case when pair1_Ra > -1 and pair1_Ra < 1 then pair1_Ra end) tie_win from stat t
+    ch_start = read_config('ch_start')
+    ch_end = read_config('ch_end')
+
+    Players_Championship_Day_Stat = '''
+    select player   -- Игрок
+     , 1.0*coalesce(sum(case when win_lose = 1 then 1 end), 0)/count(*) pct_win -- % побед
+     , count(case when win_lose = 1 then 1 end) cnt_win -- количество побед
+     , count(case when win_lose = 0 then 1 end) cnt_lost -- количество поражений
+     , count(*) cnt_game -- количество всего игр 
+     , sum(Ra) Ra --дельта счета за день
+  from v_player_stat t1
+  where t1.date = (select max(date) from stat)
+  group by player
+  order by pct_win desc, Ra desc; -- сортировка по процентам побед, дельте 
+    '''
+
+    Players_Championship_Total_Stat = '''
+    with d as
+( select distinct date from stat where date between ? and ? -- параметры, определяющие период турнира
+), pl as
+( select t1.player, min(t1.date) min_date from d inner join v_player_stat t1 on t1.date = d.date group by t1.player
+), t2 as
+( select pl.player
+       , d.date
+       , sum(count(win_lose)) over (partition by pl.player order by d.date) cnt_game
+       , sum(sum(case when win_lose = 1 then 1 end)) over (partition by pl.player order by d.date) cnt_win
+       , 1.0*coalesce(sum(sum(case when win_lose = 1 then 1 end)) over (partition by pl.player order by d.date), 0)/sum(count(win_lose)) over (partition by pl.player order by d.date) pct_win -- % побед
+       , max(d.date) over () last_date
+    from d cross join pl
+         left outer join v_player_stat t1 on t1.date = d.date and t1.player = pl.player and d.date >= pl.min_date  
+    group by pl.player, d.date
+), t3 as
+( select t2.*
+       , rank() over (partition by date order by pct_win desc) player_rank
+    from t2
+), t4 as
+( select t3.*
+       , lag(player_rank) over (partition by player order by date) lag_player_rank
+    from t3
 )
 select player
-     , sum(Ra) last_date_Ra --дельта счета за этот день
-     , count(case when win = 1 then 1 end) cnt_win -- количество побед
-     , count(case when win = -1 then 1 end) cnt_lost -- количество поражений
-     , count(case when tie_win = 1 then 1 end) cnt_tie_win -- количество больше-меньше побед
-     , count(case when tie_win = -1 then 1 end) cnt_tie_lost -- количество больше-меньше поражений
-     , count(*) cnt_game -- количество всего игр 
-  from t1
-  where date = (select max(date) from stat)
-  group by player
-  order by sum(Ra) desc;'''
+     , cnt_game -- сколько игр было сыграно
+     , pct_win -- % побед
+     , case when lag_player_rank <> player_rank then lag_player_rank-player_rank end diff_rank
+     , 1 prize -- Добавить вхождение в призы (10 игроков/40% от avg)
+  from t4
+  where date = last_date
+  order by pct_win desc, cnt_game desc;
+    '''
 
-    Players_Total_Stat = ''' with d as
+
+    Players_Last_Day_Stat = '''with d as
 ( select distinct date from stat
 ), pl as
-( select player, min(date) min_date from (select date, player1 player from stat union all select date, player2 from stat union all select date, player3 from stat union all select date, player4 from stat) group by player
-), t1 as
-( select id, date, player1 player, player2 partner, pair1_avr_score pair_avr_score, pair1_Ea Ea, pair1_Sa Sa, pair1_Ra Ra from stat t
-union all select id, date, player2 player, player1 partner, pair1_avr_score, pair1_Ea, pair1_Sa, pair1_Ra from stat t
-union all select id, date, player3 player, player4 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
-union all select id, date, player4 player, player3 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
+( select player, min(date) min_date from v_player_stat group by player
 ), t2 as
 ( select pl.player
        , d.date
@@ -244,7 +285,7 @@ union all select id, date, player4 player, player3 partner, pair2_avr_score, pai
        , 500 + sum(sum(t1.Ra)) over (partition by pl.player order by d.date) score
        , max(d.date) over () last_date
     from d cross join pl
-         left outer join t1 on t1.date = d.date and t1.player = pl.player and d.date >= pl.min_date  
+         left outer join v_player_stat t1 on t1.date = d.date and t1.player = pl.player and d.date >= pl.min_date  
     group by pl.player, d.date
 ), t3 as
 ( select t2.*
@@ -255,31 +296,64 @@ union all select id, date, player4 player, player3 partner, pair2_avr_score, pai
        , lag(player_rank) over (partition by player order by date) lag_player_rank
     from t3
 )
-select player                                                     -- игрок
-     , score                                                      -- текущий рейтинг
-     , last_date_Ra                                               -- дельту прироста за последнюю дату
-     , cnt_game                                                   -- сколько игр было сыграно
-     , player_last_date                                           -- датой когда этот игрок играл последний раз
-     , case when lag_player_rank <> player_rank then lag_player_rank-player_rank end diff_rank -- динамика
+select player
+     , sum(Ra) last_date_Ra --дельта счета за этот день
+     , count(case when win_lose = 1 then 1 end) cnt_win -- количество побед
+     , count(case when win_lose = 0 then 1 end) cnt_lost -- количество поражений
+     , count(case when win_lose = 1 and max_min = 1 then 1 end) cnt_tie_win -- количество больше-меньше побед
+     , count(case when win_lose = 0 and max_min = 1 then 1 end) cnt_tie_lost -- количество больше-меньше поражений
+     , count(*) cnt_game -- количество всего игр 
+     , 100*coalesce(sum(case when win_lose = 1 then 1 end), 0)/count(*) pct_win -- % побед
+  from v_player_stat t1
+  where date = (select max(date) from stat)
+  group by player
+  order by sum(Ra) desc;
+'''
+
+    Players_Total_Stat = ''' with d as
+( select distinct date from stat
+), pl as
+( select player, min(date) min_date from v_player_stat group by player
+), t2 as
+( select pl.player
+       , d.date
+       , sum(t1.Ra) last_date_Ra
+       , sum(count(t1.Ra)) over (partition by pl.player order by d.date) cnt_game
+       , max(case when sum(t1.Ra) is not null then d.date end) over (partition by pl.player) player_last_date
+       , 500 + sum(sum(t1.Ra)) over (partition by pl.player order by d.date) score
+       , max(d.date) over () last_date
+    from d cross join pl
+         left outer join v_player_stat t1 on t1.date = d.date and t1.player = pl.player and d.date >= pl.min_date  
+    group by pl.player, d.date
+), t3 as
+( select t2.*
+       , rank() over (partition by date order by score desc) player_rank
+    from t2
+), t4 as
+( select t3.*
+       , lag(player_rank) over (partition by player order by date) lag_player_rank
+    from t3
+)
+select player
+     , score -- текущий рейтинг
+     , last_date_Ra -- дельту прироста за последнюю дату
+     , cnt_game -- сколько игр было сыграно
+     , player_last_date -- датой когда этот игрок играл последний раз
+     , case when lag_player_rank <> player_rank then lag_player_rank-player_rank end diff_rank
   from t4
   where date = last_date
   order by score desc;'''
 
-    Players_win_pair_stat = '''with t1 as
-    ( select id, date, player1 player, player2 partner, pair1_avr_score pair_avr_score, pair1_Ea Ea, pair1_Sa Sa, pair1_Ra Ra, sign(pair1_Ra) win from stat t
-    union all select id, date, player2 player, player1 partner, pair1_avr_score, pair1_Ea, pair1_Sa, pair1_Ra, sign(pair1_Ra) win from stat t
-    union all select id, date, player3 player, player4 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra, sign(pair2_Ra) win from stat t
-    union all select id, date, player4 player, player3 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra, sign(pair2_Ra) win from stat t
-    )
+    Players_win_pair_stat = '''
     select player, partner
-         , count(*)
-         , coalesce(sum(case when win>0 then 1 end), 0) cnt_win
-         , coalesce(sum(case when win<0 then 1 end), 0) cnt_lost
-         , 100*coalesce(sum(case when win>0 then 1 end), 0)/count(*) pct_win
-      from t1
-      group by player, partner
-      having count(*) > 2
-      order by player, pct_win desc;'''
+     , count(*)
+     , coalesce(sum(case when win_lose = 1 then 1 end), 0) cnt_win
+     , coalesce(sum(case when win_lose = 0 then 1 end), 0) cnt_lost
+     , 100*coalesce(sum(case when win_lose = 1 then 1 end), 0)/count(*) pct_win
+  from v_player_stat t1
+  group by player, partner
+  having count(*) > 2
+  order by player, pct_win desc;'''
 
     Players_win_opponent_stat = '''with t1 as
     ( select id, date, player1 player, player3 opponent, sign(pair1_Ra) win from stat t
@@ -301,37 +375,18 @@ select player                                                     -- игрок
       having count(*) > 2
       order by player, pct_win desc;'''
 
-    # Players_daily2_stat = '''with t1 as
-    # ( select id, date, player1 player, player2 partner, pair1_avr_score pair_avr_score, pair1_Ea Ea, pair1_Sa Sa, pair1_Ra Ra from stat t
-    # union all select id, date, player2 player, player1 partner, pair1_avr_score, pair1_Ea, pair1_Sa, pair1_Ra from stat t
-    # union all select id, date, player3 player, player4 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
-    # union all select id, date, player4 player, player3 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
-    # )
-    # select player
-    #      , date
-    #      , 500 + sum(sum(Ra)) over (partition by player order by date) score -- текущий рейтинг
-    #      , sum(count(*)) over (partition by player order by date) cnt_game -- сколько игр было сыграно
-    #   from t1
-    #   group by player, date
-    #   order by player, date;'''
-
-    Players_daily_stat = '''with d as
-    ( select distinct date from stat
-    ), pl as
-    ( select distinct player from (select player1 player from stat union all select player2 from stat union all select player3 from stat union all select player4 from stat)
-    ), t1 as
-    ( select id, date, player1 player, player2 partner, pair1_avr_score pair_avr_score, pair1_Ea Ea, pair1_Sa Sa, pair1_Ra Ra from stat t
-    union all select id, date, player2 player, player1 partner, pair1_avr_score, pair1_Ea, pair1_Sa, pair1_Ra from stat t
-    union all select id, date, player3 player, player4 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
-    union all select id, date, player4 player, player3 partner, pair2_avr_score, pair2_Ea, pair2_Sa, pair2_Ra from stat t
-    ) 
-    select d.date
-         , pl.player
-         , case when count(Ra) <> 0 then 500 + coalesce(sum(sum(Ra)) over (partition by pl.player order by d.date), 0) end score -- текущий рейтинг
-      from d cross join pl
-           left outer join t1 on t1.date = d.date and t1.player = pl.player
-      group by pl.player, d.date
-      order by pl.player, d.date;'''
+    Players_daily_stat ='''with d as
+( select distinct date from stat
+), pl as
+( select distinct player from v_player_stat
+) 
+select d.date
+     ,pl.player
+     , case when count(Ra) <> 0 then 500 + coalesce(sum(sum(Ra)) over (partition by pl.player order by d.date), 0) end score -- текущий рейтинг
+  from d cross join pl
+       left outer join v_player_stat t1 on t1.date = d.date and t1.player = pl.player
+  group by pl.player, d.date
+  order by pl.player, d.date;'''
 
     #from xlsxwriter.workbook import Workbook
     import xlsxwriter
@@ -380,11 +435,67 @@ select player                                                     -- игрок
     worksheet.insert_image('A16', '2_desc.jpg')
     worksheet.insert_image('A32', '3_desc.jpg')
 
+    #  Create view table
+    create_view_table()
+
+    #  ChampionShip Last Day worksheet creation
+    worksheet = workbook.add_worksheet('Чемпион Дня')
+    mysel = c.execute(Players_Championship_Day_Stat)
+    header = ['Место', 'Игрок', 'Рейтинг', 'Победы', 'Поражения', 'Всего Игр', 'Дельта']
+    for idx, col in enumerate(header):
+        worksheet.write(0, idx, col, head_fmt)  # write the column name one time in a row
+
+    # write all data from SELECT. keep 1 row and 1 column NULL
+    for i, row in enumerate(mysel):
+        for j, value in enumerate(row):
+            if j == 1:
+                value = round(value, 3)
+            elif j == 5:
+                value = round(value, 0)
+            worksheet.write(i + 1, j + 1, value, def_fmt)
+
+    worksheet.write_column(1, 0, [i for i in range(1, len(c.execute(Players_Championship_Day_Stat).fetchall()) + 1)], head_fmt)  # make and insert column 1 with index
+
+    worksheet.set_column('B:B', 18)
+    worksheet.set_column('C:I', 11)
+
+
+
+
+    worksheet = workbook.add_worksheet('Чемпионат 2023')
+    mysel = c.execute(Players_Championship_Total_Stat, (ch_start, ch_end))
+    header = ['Место', 'Игрок', 'Всего Игр', 'Рейтинг', 'Динамика']
+    for idx, col in enumerate(header):
+        worksheet.write(0, idx, col, head_fmt)  # write the column name one time in a row
+
+    # write all data from SELECT. keep 1 row and 1 column NULL
+    for i, row in enumerate(mysel):
+        for j, value in enumerate(row):
+            if j == 3:
+                worksheet.write(i + 1, j + 1, value, def_fmt_color)
+            elif j == 0:
+                worksheet.write(i + 1, j + 1, value, bold_fmt)
+
+            elif j == 2:
+                value = round(value, 3)
+                worksheet.write(i + 1, j + 1, value, def_fmt)
+            else:
+                worksheet.write(i + 1, j + 1, value, def_fmt)
+
+    worksheet.write_column(1, 0, [i for i in range(1, len(c.execute(Players_Championship_Total_Stat, (ch_start, ch_end)).fetchall()) + 1)],
+                           head_fmt)  # make and insert column 1 with index
+
+    worksheet.set_column('B:B', 18)
+    worksheet.set_column('C:G', 11)
+    worksheet.set_column('F:F', 18)
+
+
+
 
     #  Last-Day worksheet creation
-    worksheet = workbook.add_worksheet('Last-Day')
+    worksheet = workbook.add_worksheet('Рейтинг Дня')
     mysel = c.execute(Players_Last_Day_Stat)
-    header = ['Место', 'Игрок', 'Дельта', 'Победы', 'Поражения', 'Win-ma/mi', 'Loss-ma/mi', 'Всего Игр']
+    header = ['Место', 'Игрок', 'Дельта', 'Победы', 'Поражения', 'Win-Bal', 'Loss-Bal', 'Всего Игр', '% Побед']
     for idx, col in enumerate(header):
         worksheet.write(0, idx, col, head_fmt)  # write the column name one time in a row
 
@@ -398,10 +509,12 @@ select player                                                     -- игрок
     worksheet.write_column(1, 0, [i for i in range(1, len(c.execute(Players_Last_Day_Stat).fetchall()) + 1)], head_fmt)  # make and insert column 1 with index
 
     worksheet.set_column('B:B', 18)
-    worksheet.set_column('C:H', 11)
-    #worksheet.autofit()
+    worksheet.set_column('C:I', 11)
 
-    worksheet = workbook.add_worksheet('Total')
+
+
+
+    worksheet = workbook.add_worksheet('Общий Рейтинг')
     mysel=c.execute(Players_Total_Stat)
     header = ['Место', 'Игрок', 'Рейтинг', 'Дельта', 'Всего Игр', 'Последняя Игра', 'Динамика']
     for idx, col in enumerate(header):
@@ -428,7 +541,7 @@ select player                                                     -- игрок
     worksheet.set_column('F:F', 18)
 
 
-    worksheet = workbook.add_worksheet('Pair-Win')
+    worksheet = workbook.add_worksheet('Лучший Напарник')
     mysel=c.execute(Players_win_pair_stat)
     header = ['Игрок', 'Партнер', 'Всего Игр', 'Побед', 'Поражений', '% Побед']
     for idx, col in enumerate(header):
@@ -449,7 +562,7 @@ select player                                                     -- игрок
     worksheet.autofilter(0, 0, 0, 0)
 
 
-    worksheet = workbook.add_worksheet('Opponent-Win')
+    worksheet = workbook.add_worksheet('Кому Проигрываешь')
     mysel=c.execute(Players_win_opponent_stat)
     header = ['Игрок', 'Соперник', 'Всего Игр', 'Побед', 'Поражений', '% Побед']
     for idx, col in enumerate(header):
@@ -470,7 +583,7 @@ select player                                                     -- игрок
     worksheet.autofilter(0, 0, 0, 0)
 
 
-    worksheet = workbook.add_worksheet('Daily')
+    worksheet = workbook.add_worksheet('График Рейтинга')
     mysel = c.execute(Players_daily_stat)
 
     r = 1
@@ -502,9 +615,9 @@ select player                                                     -- игрок
     for i in range(cl):
         col = i + 1
         chart.add_series({
-            'name': ['Daily', 0, col],
-            'categories': ['Daily', 1, 0, r-1, 0],
-            'values': ['Daily', 1, col, r-1, col],
+            'name': ['График Рейтинга', 0, col],
+            'categories': ['График Рейтинга', 1, 0, r-1, 0],
+            'values': ['График Рейтинга', 1, col, r-1, col],
         })
 
     # Configure the chart axes.

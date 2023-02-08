@@ -10,7 +10,8 @@ class Player:
         self.play_times = play_times
 
     def update_play_times(self):
-        self.play_times = self.play_times + 1
+        #self.play_times = self.play_times + 1
+        self.play_times += 1
         return self.play_times
 
     def set_daily_score(self, new_score):
@@ -231,10 +232,6 @@ class Game:
                 i['score'] = self.players[3].score
 
     def update_play_times(self, dict):
-        # self.players[0].update_play_times()
-        # self.players[1].update_play_times()
-        # self.players[2].update_play_times()
-        # self.players[3].update_play_times()
         for i in dict:
             if i['name'] == self.players[0].name:
                 i['play_times'] = self.players[0].update_play_times()

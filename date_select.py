@@ -18,10 +18,10 @@ def validate_short_date(date):
         print(f'Формат даты должен быть "ГГГГ-ММ-ДД", вы ввели "{date}"')
         return False
 
-def convert_date(date):
-    temp = datetime.datetime.strptime(date, "%d.%m.%Y").strftime("%Y-%m-%d")
-    print(temp)
-    return temp
+# def convert_date(date):
+#     temp = datetime.datetime.strptime(date, "%d.%m.%Y").strftime("%Y-%m-%d")
+#     print(temp)
+#     return temp
 
 def date_input():
     while True:
