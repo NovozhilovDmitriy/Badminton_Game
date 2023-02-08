@@ -3,10 +3,15 @@ import DB_SQLite
 
 class Player:
 
-    def __init__(self, name, score=500, daily_score=0):
+    def __init__(self, name, score=500, daily_score=0, play_times=1):
         self.name = name
         self.score = score
         self.daily_score = daily_score
+        self.play_times = play_times
+
+    def update_play_times(self):
+        self.play_times = self.play_times + 1
+        return self.play_times
 
     def set_daily_score(self, new_score):
         #  update player daily score after each game
@@ -26,7 +31,6 @@ class Player:
 
     def name(self):
         return self.name
-
 
 class Game:
 
@@ -83,12 +87,15 @@ class Game:
             if not isinstance(self.players[i], Player):
                 for ii in self.Temp_import_players:
                     if ii['name'] == self.players[i]:
-                        self.players[i] = Player(self.players[i], ii['score'], ii['daily_score'])
-                        a = dict(name=self.players[i].name, score=self.players[i].score, daily_score=self.players[i].daily_score)
+                        self.players[i] = Player(self.players[i], ii['score'], ii['daily_score'], ii['play_times'])
+                        a = dict(name=self.players[i].name, score=self.players[i].score, daily_score=self.players[i].daily_score, play_times=self.players[i].play_times)
                         self.Online_Players_Dict.append(a)
                 if not isinstance(self.players[i], Player):
-                    self.players[i] = Player(self.players[i])
-                    a = dict(name=self.players[i].name, score=self.players[i].score, daily_score=self.players[i].daily_score)
+                    if self.players[i] == 'Cat2':     #  Start Temp code for check service.
+                        self.players[i] = Player(self.players[i], 200)
+                    else:                            #  Stop test code for test service
+                        self.players[i] = Player(self.players[i])
+                    a = dict(name=self.players[i].name, score=self.players[i].score, daily_score=self.players[i].daily_score, play_times=self.players[i].play_times)
                     self.Online_Players_Dict.append(a)
                     self.Temp_Players_Dict.append(a)
 
@@ -130,11 +137,11 @@ class Game:
 
     def real_score_1(self):
         #  found update Pair1 score what will be used to multiply with Player daily score. 20 - need update later
-        return 20 * (self.real_score(self.score_pair1, self.score_pair2) - self.wait_score_1())
+        return 10 * (self.real_score(self.score_pair1, self.score_pair2) - self.wait_score_1())
 
     def real_score_2(self):
         #  found update Pair2 score what will be used to multiply with Player daily score. 20 - need update later
-        return 20 * (self.real_score(self.score_pair2, self.score_pair1) - self.wait_score_2())
+        return 10 * (self.real_score(self.score_pair2, self.score_pair1) - self.wait_score_2())
 
     @staticmethod
     def win_lose_max_min(score1, score2):
@@ -155,26 +162,40 @@ class Game:
         self.players[2].set_daily_score(self.real_score_2())
         self.players[3].set_daily_score(self.real_score_2())
         self.insert_user_data_to_DB(date)
-        # return print('game=', self.date,'\n',self.players[0].name, '=', self.players[0].daily_score,'current=',self.players[0].score,'\n',
+        # return print('game=', self.date,'\n',self.players[0].name, '=', self.players[0].daily_score,'current=',self.players[0].score,',',
         #              self.players[1].name, '=', self.players[1].daily_score,'current=',self.players[1].score,'\n',
-        #              '  score=',self.score_pair1,'pair_avr=',self.get_pair_avr_score(self.players[0], self.players[1]),'Ea=',self.wait_score_1(),'Sa=',self.real_score(self.score_pair1, self.score_pair2),'Ra=',self.real_score_1(),'\n',
-        #              self.players[2].name, '=', self.players[2].daily_score,'current=',self.players[2].score,'\n',
+        #              '  score=',self.score_pair1,'pair_avr=',self.get_pair_avr_score(self.players[0], self.players[1]),'\n',
+        #              'Ea=',self.wait_score_1(),'Sa=',self.real_score(self.score_pair1, self.score_pair2),'\n',
+        #              'Ra=',self.real_score_1(),'\n',
+        #              self.players[2].name, '=', self.players[2].daily_score,'current=',self.players[2].score,',',
         #              self.players[3].name, '=', self.players[3].daily_score,'current=',self.players[3].score,'\n',
-        #              '  score=',self.score_pair2,'pair_avr=',self.get_pair_avr_score(self.players[2], self.players[3]),'Ea=',self.wait_score_2(),'Sa=',self.real_score(self.score_pair2, self.score_pair1),'Ra=',self.real_score_2())
+        #              '  score=',self.score_pair2,'pair_avr=',self.get_pair_avr_score(self.players[2], self.players[3]),'\n',
+        #              'Ea=',self.wait_score_2(),'Sa=',self.real_score(self.score_pair2, self.score_pair1),'\n',
+        #              'Ra=',self.real_score_2(),'\n')
+        return print('', self.players[0].name, 'score =', self.players[0].score, 'games=', self.players[0].play_times,',',
+                     self.players[1].name, 'score =', self.players[1].score, 'games=', self.players[1].play_times,
+                     '    AVR=(', self.get_pair_avr_score(self.players[0], self.players[1]), ')', '\n',
+                     '  score=', self.score_pair1, '     Ea=', self.wait_score_1(), '\n',
+                     '      Sa=', self.real_score(self.score_pair1, self.score_pair2), '     Ra=', self.real_score_1(), '\n',
+                     self.players[2].name, 'score =', self.players[2].score, 'games=', self.players[2].play_times, ',',
+                     self.players[3].name, 'score =', self.players[3].score, 'games=', self.players[3].play_times,
+                     '    AVR=(', self.get_pair_avr_score(self.players[2], self.players[3]), ')', '\n',
+                     '  score=', self.score_pair2, '     Ea=', self.wait_score_2(), '\n',
+                     '      Sa=', self.real_score(self.score_pair2, self.score_pair1), '     Ra=', self.real_score_2(), '\n')
 
     def insert_user_data_to_DB(self, date):
         self.date = date
         stat = (self.date,
-                self.players[0].name, self.players[0].daily_score, self.players[0].score,
-                self.players[1].name, self.players[1].daily_score, self.players[1].score,
+                self.players[0].name, self.players[0].daily_score, self.players[0].score, self.players[0].play_times,
+                self.players[1].name, self.players[1].daily_score, self.players[1].score, self.players[1].play_times,
                 self.score_pair1,
                 self.win_lose_max_min(self.score_pair1, self.score_pair2)[0],
                 self.win_lose_max_min(self.score_pair1, self.score_pair2)[1],
                 self.win_lose_max_min(self.score_pair1, self.score_pair2)[2],
                 self.get_pair_avr_score(self.players[0], self.players[1]), self.wait_score_1(),
                 self.real_score(self.score_pair1, self.score_pair2), self.real_score_1(),
-                self.players[2].name, self.players[2].daily_score, self.players[2].score,
-                self.players[3].name, self.players[3].daily_score, self.players[3].score,
+                self.players[2].name, self.players[2].daily_score, self.players[2].score, self.players[2].play_times,
+                self.players[3].name, self.players[3].daily_score, self.players[3].score, self.players[3].play_times,
                 self.score_pair2,
                 self.win_lose_max_min(self.score_pair2, self.score_pair1)[0],
                 self.win_lose_max_min(self.score_pair2, self.score_pair1)[1],
@@ -209,6 +230,21 @@ class Game:
             elif i['name'] == self.players[3].name:
                 i['score'] = self.players[3].score
 
+    def update_play_times(self, dict):
+        # self.players[0].update_play_times()
+        # self.players[1].update_play_times()
+        # self.players[2].update_play_times()
+        # self.players[3].update_play_times()
+        for i in dict:
+            if i['name'] == self.players[0].name:
+                i['play_times'] = self.players[0].update_play_times()
+            elif i['name'] == self.players[1].name:
+                i['play_times'] = self.players[1].update_play_times()
+            elif i['name'] == self.players[2].name:
+                i['play_times'] = self.players[2].update_play_times()
+            elif i['name'] == self.players[3].name:
+                i['play_times'] = self.players[3].update_play_times()
+
 class Day:
 
     def __init__(self, date, games):
@@ -219,11 +255,13 @@ class Day:
         temp_dict = []
         for i in self.list_of_games:
             self.game = Game(i['player1'], i['player2'], i['player3'], i['player4'], i['score1'], i['score2'])
-            self.game.import_players(Players_Dict)  # this is for each game
-            self.game.create_temp_players()         # this is for each game
-            self.game.set_daily_score(self.date)    # this is after each game
+            self.game.import_players(Players_Dict)  #  this is for each game - Import list of all players from previouse games
+            self.game.create_temp_players()         #  this is for each game - create temp list of players what need to process.
+            self.game.set_daily_score(self.date)    #  this is after each game
+           # self.game.update_play_times(Players_Dict)
             self.game.list_daily_new_player(temp_dict)            # Сохраняю имена всех игроков которых нет в предыдущей статистике.
             self.game.extend_players_dict(Players_Dict)
+            self.game.update_play_times(Players_Dict)
             self.game.update_daily_score_in_dict(Players_Dict)
         self.game.print_list_new_player(self.date, temp_dict)  # Печатаю всех новых игроков за этот игровой день
         for i in Players_Dict:   # Update score in Players_Dict after each day of games. Mandatory.
