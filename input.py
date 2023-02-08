@@ -38,7 +38,7 @@ class Import_Excel:
     @staticmethod
     def check_file_exist(file, sheet):
         if os.path.exists(file):
-            Import_Excel.check_sheet(file, sheet)
+            return Import_Excel.check_sheet(file, sheet)
         else:
             print()
             print('!!!!  Excel файл (%s) не найден. Статистика будет пересчитана без учета этих данных.' % (file))

@@ -183,8 +183,8 @@ def check_date(date):
 def table_date_list():
     # create a database connection
     conn = create_connection()
-#    sql = ''' select distinct date from games order by date asc; '''
-    sql = ''' select distinct date from games order by strftime('%s', date); '''
+    sql = ''' select distinct date from games order by date asc; '''
+ #   sql = ''' select distinct date from games order by strftime('%s', date); '''
     conn.row_factory = lambda cursor, row: row[0]
     cur = conn.cursor()
     cur.execute(sql)
