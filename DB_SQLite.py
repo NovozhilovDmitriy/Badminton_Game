@@ -280,12 +280,15 @@ select player
     '''
 
 
-    Players_Last_Day_Stat = '''select player
+    Players_Last_Day_Stat = '''
+select player
      , sum(Ra) last_date_Ra --дельта счета за этот день
      , count(case when win_lose = 1 then 1 end) cnt_win -- количество побед
      , count(case when win_lose = 0 then 1 end) cnt_lost -- количество поражений
      , count(case when win_lose = 1 and max_min = 1 then 1 end) cnt_tie_win -- количество больше-меньше побед
      , count(case when win_lose = 0 and max_min = 1 then 1 end) cnt_tie_lost -- количество больше-меньше поражений
+     , count(case when win_lose = 1 and more10 = 1 then 1 end) cnt_more10_win -- количество через 10 побед
+     , count(case when win_lose = 0 and more10 = 1 then 1 end) cnt_more10_lost -- количество через 10 поражений
      , count(*) cnt_game -- количество всего игр 
      , 100*coalesce(sum(case when win_lose = 1 then 1 end), 0)/count(*) pct_win -- % побед
   from v_player_stat t1
@@ -388,13 +391,14 @@ select d.date
     c = conn.cursor()
 
     # ---------START------------- Excel FONT FORMAT LIST -------------START----------------
+    #  For normal digits
     def_fmt = workbook.add_format({
         'align': 'center',
         'valign': 'vcenter',
         'border': 2,
         'bold': False
     })
-
+    #  For Dynamic color digits
     def_fmt_color = workbook.add_format({
         'bold': True,
         'align': 'center',
@@ -404,7 +408,7 @@ select d.date
         'font_size': 14,
         'bg_color': '#E4E4E4'
     })
-
+    #  for Players Names
     bold_fmt = workbook.add_format({
         'bold': True,
         'align': 'center',
@@ -412,7 +416,7 @@ select d.date
         'border': 2,
         'font_size': 14
     })
-
+    # For table headers
     head_fmt = workbook.add_format({
         'bold': True,
         'align': 'center',
@@ -422,6 +426,7 @@ select d.date
         'font_size': 12,
         'text_wrap': True
     })
+    #  Pick color for special list games
     game_fmt = workbook.add_format({
         'bold': True,
         'align': 'center',
@@ -430,7 +435,7 @@ select d.date
         'bg_color': '#F5D6C7',
         'font_size': 15
     })
-
+    #  Biggest display game score
     score_fmt = workbook.add_format({
         'bold': True,
         'align': 'center',
@@ -438,7 +443,16 @@ select d.date
         'font_size': 17,
         'border': 2
     })
-
+    #  For 0.000 display
+    score3_fmt = workbook.add_format({
+        'bold': True,
+        'align': 'center',
+        'valign': 'vcenter',
+        'font_size': 17,
+        'border': 2,
+        'num_format': '0.000'
+    })
+    #  For middle selection
     rating_fmt = workbook.add_format({
         'bold': False,
         'align': 'center',
@@ -478,16 +492,21 @@ select d.date
     # write all data from SELECT. keep 1 row and 1 column NULL
     for i, row in enumerate(mysel):
         for j, value in enumerate(row):
-            if j == 1:
+            if j == 0:
+                worksheet.write(i + 1, j + 1, value, bold_fmt)  #  Players Name format
+            elif j == 1:
                 value = round(value, 3)
+                worksheet.write(i + 1, j + 1, value, score3_fmt) #  Rating format
             elif j == 5:
                 value = round(value, 0)
-            worksheet.write(i + 1, j + 1, value, def_fmt)
+                worksheet.write(i + 1, j + 1, value, def_fmt_color) #  Color font format
+            else:
+                worksheet.write(i + 1, j + 1, value, def_fmt)
 
     worksheet.write_column(1, 0, [i for i in range(1, len(c.execute(Players_Championship_Day_Stat).fetchall()) + 1)], head_fmt)  # make and insert column 1 with index
 
     worksheet.set_column('B:B', 18)
-    worksheet.set_column('C:I', 11)
+    worksheet.set_column('C:I', 12)
 
     # -----------------------------------------------------------------------------------------------
     worksheet = workbook.add_worksheet('Чемпионат 2023')
@@ -506,7 +525,7 @@ select d.date
 
             elif j == 2:
                 value = round(value, 3)
-                worksheet.write(i + 1, j + 1, value, def_fmt)
+                worksheet.write(i + 1, j + 1, value, score3_fmt)
             else:
                 worksheet.write(i + 1, j + 1, value, def_fmt)
 
@@ -521,7 +540,7 @@ select d.date
     #  Last-Day worksheet creation
     worksheet = workbook.add_worksheet('Рейтинг Дня')
     mysel = c.execute(Players_Last_Day_Stat)
-    header = ['Место', 'Игрок', 'Дельта', 'Победы', 'Поражения', 'Win-Bal', 'Loss-Bal', 'Всего Игр', '% Побед']
+    header = ['Место', 'Игрок', 'Дельта', 'Победы', 'Проигрыш', 'Победа на балансе', 'Проигрыш на балансе', 'Победа через 10', 'Проигрыш через 10', 'Всего Игр', '% Побед']
     for idx, col in enumerate(header):
         worksheet.write(0, idx, col, head_fmt)  # write the column name one time in a row
 
@@ -535,7 +554,7 @@ select d.date
     worksheet.write_column(1, 0, [i for i in range(1, len(c.execute(Players_Last_Day_Stat).fetchall()) + 1)], head_fmt)  # make and insert column 1 with index
 
     worksheet.set_column('B:B', 18)
-    worksheet.set_column('C:I', 11)
+    worksheet.set_column('C:K', 11)
 
     # -----------------------------------------------------------------------------------------------
     worksheet = workbook.add_worksheet('Общий Рейтинг')
