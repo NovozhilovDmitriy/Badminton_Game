@@ -92,7 +92,7 @@ class Game:
                         a = dict(name=self.players[i].name, score=self.players[i].score, daily_score=self.players[i].daily_score, play_times=self.players[i].play_times)
                         self.Online_Players_Dict.append(a)
                 if not isinstance(self.players[i], Player):
-                    if self.players[i] == 'Cat2':     #  Start Temp code for check service.
+                    if self.players[i] == 'Cat':     #  Start Temp code for check service.
                         self.players[i] = Player(self.players[i], 200)
                     else:                            #  Stop test code for test service
                         self.players[i] = Player(self.players[i])
@@ -102,66 +102,114 @@ class Game:
 
 
     def get_pair_avr_score(self, pl_1, pl_2):
-        #  Count average score of the pairs by formula (score1+score2)/2
+        #  Count AVERAGE score of the pairs by formula (score1+score2)/2
         return (pl_1.score + pl_2.score) / 2
 
 
-    def wait_score_2(self):
-        #  Found waiting score of the Pair1 in game by Elo formula.
+    def wait_score_2_Ea(self):
+        #  Found waiting score of the Pair1 in game by Elo formula. (Ea)
         return 1 / (1 + 10 ** ((
                 self.get_pair_avr_score(self.players[0], self.players[1]) - self.get_pair_avr_score(self.players[2],
                                                                                               self.players[3])) / 100))
 
-    def wait_score_1(self):
-        #  Found waiting score of the Pair2 in game by Elo formula.
+    def wait_score_1_Ea(self):
+        #  Found waiting score of the Pair2 in game by Elo formula.  (Ea)
         return 1 / (1 + 10 ** ((
                 self.get_pair_avr_score(self.players[2], self.players[3]) - self.get_pair_avr_score(self.players[0],
                                                                                               self.players[1])) / 100))
 
     @staticmethod
-    def real_score(one, two):
+    def real_score_Sa(one, two):
         # compare Game score between Pairs and found parameter of the winners (if win = 1, if loose = 0, for 21:23
-        # need add 0.2 and update logic later)
+        # need add 0.2 and update logic later) -  (Sa)
+        # if 10 >= two < one >= 21:  #  Побелили через 10
+        #     return 1.2
+        # elif 10 >= one < two:      #  Проиграли через 10
+        #     return -0.2
+        # elif 20 > one < two:       #  Проиграли обычно
+        #     return 0
+        # elif 20 <= one < two:      #  Проиграли на балансе
+        #     return 0.2
+        # elif one > two >= 20:      #  Выйграли на балансе
+        #     return 0.8
+        # elif 10 < two < one >= 21: #  Выйграли обычно
+        #     return 1
         if 10 >= two < one >= 21:  #  Побелили через 10
-            return 1.2
+            return 1
         elif 10 >= one < two:      #  Проиграли через 10
-            return -0.2
+            return 0
         elif 20 > one < two:       #  Проиграли обычно
             return 0
         elif 20 <= one < two:      #  Проиграли на балансе
-            return 0.2
+            return 0
         elif one > two >= 20:      #  Выйграли на балансе
-            return 0.8
+            return 1
         elif 10 < two < one >= 21: #  Выйграли обычно
             return 1
 
 
-    def real_score_1(self):
-        #  found update Pair1 score what will be used to multiply with Player daily score. 20 - need update later
-        return 10 * (self.real_score(self.score_pair1, self.score_pair2) - self.wait_score_1())
+    def real_score_1_Ra(self):
+        #  found update Pair1 score what will be used to multiply with Player daily score. (Ra)
+        return 10 * (self.real_score_Sa(self.score_pair1, self.score_pair2) - self.wait_score_1_Ea())
 
-    def real_score_2(self):
-        #  found update Pair2 score what will be used to multiply with Player daily score. 20 - need update later
-        return 10 * (self.real_score(self.score_pair2, self.score_pair1) - self.wait_score_2())
+    def real_score_2_Ra(self):
+        #  found update Pair2 score what will be used to multiply with Player daily score. (Ra)
+        return 10 * (self.real_score_Sa(self.score_pair2, self.score_pair1) - self.wait_score_2_Ea())
 
     @staticmethod
     def win_lose_max_min(score1, score2):
         temp = [0, 0, 0]
-        if score1 > score2:  # Who win = 1, who lose = 0
+        if score1 > score2:               # Who win = 1, who lose = 0
             temp[0] = 1
-        if score1 > 21 or score2 > 21:  # if game on balance
+        if score1 > 21 or score2 > 21:    # if game on balance
             temp[1] = 1
         if score1 <= 10 or score2 <= 10:  # if game more than 10 score
             temp[2] = 1
         return temp
 
+    def deviation_Ra(self, Ra1, Ra2):
+
+        if self.win_lose_max_min(self.score_pair1, self.score_pair2)[1] == 1:
+            return Ra1 / 2, Ra2 / 2
+        elif self.win_lose_max_min(self.score_pair1, self.score_pair2)[2] == 1:
+            if Ra1 > 5:
+                Ra1 = 5 + (Ra1 - 5) * 2
+                if Ra2 > 5:
+                    Ra2 = 5 + (Ra1 - 5) * 2
+                elif Ra2 < - 5:
+                    Ra2 = -5 + (Ra2 + 5) * 2
+                return Ra1, Ra2
+            elif Ra1 < -5:
+                Ra1 = -5 + (Ra1 + 5) * 2
+                if Ra2 > 5:
+                    Ra2 = 5 + (Ra2 - 5) * 2
+                elif Ra2 < -5:
+                    Ra2 = -5 + (Ra2 + 5) * 2
+                return Ra1, Ra2
+            else:
+                return Ra1, Ra2
+        else:
+            return Ra1, Ra2
+
     def set_daily_score(self, date):
         #  this method updated daily score for each Player in this Game.
         self.date = date
-        self.players[0].set_daily_score(self.real_score_1())
-        self.players[1].set_daily_score(self.real_score_1())
-        self.players[2].set_daily_score(self.real_score_2())
-        self.players[3].set_daily_score(self.real_score_2())
+        Ra1 = self.real_score_1_Ra()
+        Ra2 = self.real_score_2_Ra()
+        #----------------Old logic--------------------
+        # self.players[0].set_daily_score(Ra1)
+        # self.players[1].set_daily_score(Ra1)
+        # self.players[2].set_daily_score(Ra2)
+        # self.players[3].set_daily_score(Ra2)
+        #---------------End Old Logic----------------
+
+        #------------New Logic----------------
+        self.players[0].set_daily_score(self.deviation_Ra(Ra1, Ra2)[0])
+        self.players[1].set_daily_score(self.deviation_Ra(Ra1, Ra2)[0])
+        self.players[2].set_daily_score(self.deviation_Ra(Ra1, Ra2)[1])
+        self.players[3].set_daily_score(self.deviation_Ra(Ra1, Ra2)[1])
+        #-----------End New Logic -----------
+
         self.insert_user_data_to_DB(date)
         # return print('game=', self.date,'\n',self.players[0].name, '=', self.players[0].daily_score,'current=',self.players[0].score,',',
         #              self.players[1].name, '=', self.players[1].daily_score,'current=',self.players[1].score,'\n',
@@ -172,17 +220,20 @@ class Game:
         #              self.players[3].name, '=', self.players[3].daily_score,'current=',self.players[3].score,'\n',
         #              '  score=',self.score_pair2,'pair_avr=',self.get_pair_avr_score(self.players[2], self.players[3]),'\n',
         #              'Ea=',self.wait_score_2(),'Sa=',self.real_score(self.score_pair2, self.score_pair1),'\n',
-        #              'Ra=',self.real_score_2(),'\n')
-        return print('', self.players[0].name, 'score =', self.players[0].score, 'games=', self.players[0].play_times,',',
-                     self.players[1].name, 'score =', self.players[1].score, 'games=', self.players[1].play_times,
-                     '    AVR=(', self.get_pair_avr_score(self.players[0], self.players[1]), ')', '\n',
-                     '  score=', self.score_pair1, '     Ea=', self.wait_score_1(), '\n',
-                     '      Sa=', self.real_score(self.score_pair1, self.score_pair2), '     Ra=', self.real_score_1(), '\n',
-                     self.players[2].name, 'score =', self.players[2].score, 'games=', self.players[2].play_times, ',',
-                     self.players[3].name, 'score =', self.players[3].score, 'games=', self.players[3].play_times,
-                     '    AVR=(', self.get_pair_avr_score(self.players[2], self.players[3]), ')', '\n',
-                     '  score=', self.score_pair2, '     Ea=', self.wait_score_2(), '\n',
-                     '      Sa=', self.real_score(self.score_pair2, self.score_pair1), '     Ra=', self.real_score_2(), '\n')
+        # #              'Ra=',self.real_score_2(),'\n')
+        #--------- Stdout each game stat - version 2---------------------
+        # return print('', self.players[0].name, 'score =', self.players[0].score, 'games=', self.players[0].play_times,',',
+        #              self.players[1].name, 'score =', self.players[1].score, 'games=', self.players[1].play_times,
+        #              '    AVR=(', self.get_pair_avr_score(self.players[0], self.players[1]), ')', '\n',
+        #              '  score=', self.score_pair1, '     Ea=', self.wait_score_1_Ea(), '\n',
+        #              '      Sa=', self.real_score_Sa(self.score_pair1, self.score_pair2), '     Ra=',
+        #              self.real_score_1_Ra(), '\n',
+        #              self.players[2].name, 'score =', self.players[2].score, 'games=', self.players[2].play_times, ',',
+        #              self.players[3].name, 'score =', self.players[3].score, 'games=', self.players[3].play_times,
+        #              '    AVR=(', self.get_pair_avr_score(self.players[2], self.players[3]), ')', '\n',
+        #              '  score=', self.score_pair2, '     Ea=', self.wait_score_2_Ea(), '\n',
+        #              '      Sa=', self.real_score_Sa(self.score_pair2, self.score_pair1), '     Ra=',
+        #              self.real_score_2_Ra(), '\n')
 
     def insert_user_data_to_DB(self, date):
         self.date = date
@@ -193,16 +244,21 @@ class Game:
                 self.win_lose_max_min(self.score_pair1, self.score_pair2)[0],
                 self.win_lose_max_min(self.score_pair1, self.score_pair2)[1],
                 self.win_lose_max_min(self.score_pair1, self.score_pair2)[2],
-                self.get_pair_avr_score(self.players[0], self.players[1]), self.wait_score_1(),
-                self.real_score(self.score_pair1, self.score_pair2), self.real_score_1(),
+                self.get_pair_avr_score(self.players[0], self.players[1]), self.wait_score_1_Ea(),
+                self.real_score_Sa(self.score_pair1, self.score_pair2),
+                #self.real_score_1_Ra(),
+                self.deviation_Ra(self.real_score_1_Ra(), self.real_score_2_Ra())[0],
                 self.players[2].name, self.players[2].daily_score, self.players[2].score, self.players[2].play_times,
                 self.players[3].name, self.players[3].daily_score, self.players[3].score, self.players[3].play_times,
                 self.score_pair2,
                 self.win_lose_max_min(self.score_pair2, self.score_pair1)[0],
                 self.win_lose_max_min(self.score_pair2, self.score_pair1)[1],
                 self.win_lose_max_min(self.score_pair2, self.score_pair1)[2],
-                self.get_pair_avr_score(self.players[2], self.players[3]), self.wait_score_2(),
-                self.real_score(self.score_pair2, self.score_pair1), self.real_score_2())
+                self.get_pair_avr_score(self.players[2], self.players[3]), self.wait_score_2_Ea(),
+                self.real_score_Sa(self.score_pair2, self.score_pair1),
+                #self.real_score_2_Ra()
+                self.deviation_Ra(self.real_score_1_Ra(), self.real_score_2_Ra())[1]
+                )
         DB_SQLite.insert_stat(stat)
 
 
@@ -255,10 +311,9 @@ class Day:
             self.game.import_players(Players_Dict)  #  this is for each game - Import list of all players from previouse games
             self.game.create_temp_players()         #  this is for each game - create temp list of players what need to process.
             self.game.set_daily_score(self.date)    #  this is after each game
-           # self.game.update_play_times(Players_Dict)
             self.game.list_daily_new_player(temp_dict)            # Сохраняю имена всех игроков которых нет в предыдущей статистике.
             self.game.extend_players_dict(Players_Dict)
-            self.game.update_play_times(Players_Dict)
+            self.game.update_play_times(Players_Dict)  #  Update every games how many games done by this player
             self.game.update_daily_score_in_dict(Players_Dict)
         self.game.print_list_new_player(self.date, temp_dict)  # Печатаю всех новых игроков за этот игровой день
         for i in Players_Dict:   # Update score in Players_Dict after each day of games. Mandatory.
