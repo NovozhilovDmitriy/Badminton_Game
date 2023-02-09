@@ -1,6 +1,7 @@
 import sqlite3
 from sqlite3 import Error
 from main import read_config
+import openpyxl as xl
 
 
 def create_table_game():
@@ -449,11 +450,18 @@ select d.date
 
     # -----------------------------------------------------------------------------------------------
     #  Description worksheet creation
-    worksheet = workbook.add_worksheet('Описание')
-    worksheet.insert_image('A1', '1_desc.jpg')
-    worksheet.insert_image('A16', '2_desc.jpg')
-    worksheet.insert_image('A32', '3_desc.jpg')
 
+    worksheet = workbook.add_worksheet('Описание')
+    descr_file = open('description.txt', 'r', encoding='utf8')
+
+    row = col = 0
+    for line in descr_file:
+        worksheet.write(row, col, line.strip("\n"))
+        row += 1
+
+    descr_file.close()
+
+    # -----------------------------------------------------------------------------------------------
     # drop view table
     drop_view_table()
     #  Create view table
