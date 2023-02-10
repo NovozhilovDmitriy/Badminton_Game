@@ -93,7 +93,7 @@ class Game:
                         self.Online_Players_Dict.append(a)
                 if not isinstance(self.players[i], Player):
                     if self.players[i] == 'Cat':     #  Start Temp code for check service.
-                        self.players[i] = Player(self.players[i], 200)
+                        self.players[i] = Player(self.players[i], 400)
                     else:                            #  Stop test code for test service
                         self.players[i] = Player(self.players[i])
                     a = dict(name=self.players[i].name, score=self.players[i].score, daily_score=self.players[i].daily_score, play_times=self.players[i].play_times)
@@ -122,6 +122,7 @@ class Game:
     def real_score_Sa(one, two):
         # compare Game score between Pairs and found parameter of the winners (if win = 1, if loose = 0, for 21:23
         # need add 0.2 and update logic later) -  (Sa)
+        #-----------start---------------OLD Logic for count Sa-----------------------
         # if 10 >= two < one >= 21:  #  Побелили через 10
         #     return 1.2
         # elif 10 >= one < two:      #  Проиграли через 10
@@ -134,6 +135,7 @@ class Game:
         #     return 0.8
         # elif 10 < two < one >= 21: #  Выйграли обычно
         #     return 1
+        # -----------end---------------OLD Logic for count Sa-----------------------
         if 10 >= two < one >= 21:  #  Побелили через 10
             return 1
         elif 10 >= one < two:      #  Проиграли через 10
@@ -168,10 +170,10 @@ class Game:
         return temp
 
     def deviation_Ra(self, Ra1, Ra2):
-
-        if self.win_lose_max_min(self.score_pair1, self.score_pair2)[1] == 1:
+        #  Special deviation formula for correcly score.
+        if self.win_lose_max_min(self.score_pair1, self.score_pair2)[1] == 1:  #  If balance -> Ra/2
             return Ra1 / 2, Ra2 / 2
-        elif self.win_lose_max_min(self.score_pair1, self.score_pair2)[2] == 1:
+        elif self.win_lose_max_min(self.score_pair1, self.score_pair2)[2] == 1:  #  If more10 -> special Ra.
             if Ra1 > 5:
                 Ra1 = 5 + (Ra1 - 5) * 2
                 if Ra2 > 5:
@@ -211,6 +213,7 @@ class Game:
         #-----------End New Logic -----------
 
         self.insert_user_data_to_DB(date)
+        # --------- Stdout each game stat - version 1---------------------
         # return print('game=', self.date,'\n',self.players[0].name, '=', self.players[0].daily_score,'current=',self.players[0].score,',',
         #              self.players[1].name, '=', self.players[1].daily_score,'current=',self.players[1].score,'\n',
         #              '  score=',self.score_pair1,'pair_avr=',self.get_pair_avr_score(self.players[0], self.players[1]),'\n',
@@ -221,6 +224,7 @@ class Game:
         #              '  score=',self.score_pair2,'pair_avr=',self.get_pair_avr_score(self.players[2], self.players[3]),'\n',
         #              'Ea=',self.wait_score_2(),'Sa=',self.real_score(self.score_pair2, self.score_pair1),'\n',
         # #              'Ra=',self.real_score_2(),'\n')
+
         #--------- Stdout each game stat - version 2---------------------
         # return print('', self.players[0].name, 'score =', self.players[0].score, 'games=', self.players[0].play_times,',',
         #              self.players[1].name, 'score =', self.players[1].score, 'games=', self.players[1].play_times,
@@ -246,7 +250,9 @@ class Game:
                 self.win_lose_max_min(self.score_pair1, self.score_pair2)[2],
                 self.get_pair_avr_score(self.players[0], self.players[1]), self.wait_score_1_Ea(),
                 self.real_score_Sa(self.score_pair1, self.score_pair2),
+        #---------OLD logic for Ra count--------------------------
                 #self.real_score_1_Ra(),
+        #---------------------------------------------------------
                 self.deviation_Ra(self.real_score_1_Ra(), self.real_score_2_Ra())[0],
                 self.players[2].name, self.players[2].daily_score, self.players[2].score, self.players[2].play_times,
                 self.players[3].name, self.players[3].daily_score, self.players[3].score, self.players[3].play_times,
@@ -256,7 +262,9 @@ class Game:
                 self.win_lose_max_min(self.score_pair2, self.score_pair1)[2],
                 self.get_pair_avr_score(self.players[2], self.players[3]), self.wait_score_2_Ea(),
                 self.real_score_Sa(self.score_pair2, self.score_pair1),
+        # ---------OLD logic for Ra count--------------------------
                 #self.real_score_2_Ra()
+        # ---------------------------------------------------------
                 self.deviation_Ra(self.real_score_1_Ra(), self.real_score_2_Ra())[1]
                 )
         DB_SQLite.insert_stat(stat)

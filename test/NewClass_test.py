@@ -1,5 +1,5 @@
 from unittest import TestCase
-import New_Class
+from New_Class import Game
 
 
 class Game_real_score_Test(TestCase):

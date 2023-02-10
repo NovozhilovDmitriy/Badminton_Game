@@ -498,7 +498,7 @@ select d.date
                 value = round(value, 3)
                 worksheet.write(i + 1, j + 1, value, score3_fmt) #  Rating format
             elif j == 5:
-                value = round(value, 0)
+                value = round(value, 1)
                 worksheet.write(i + 1, j + 1, value, def_fmt_color) #  Color font format
             else:
                 worksheet.write(i + 1, j + 1, value, def_fmt)
@@ -548,7 +548,7 @@ select d.date
     for i, row in enumerate(mysel):
         for j, value in enumerate(row):
             if isinstance(value, float):
-                value = int(value)
+                value = round(value, 1)
             worksheet.write(i + 1, j + 1, value, def_fmt)
 
     worksheet.write_column(1, 0, [i for i in range(1, len(c.execute(Players_Last_Day_Stat).fetchall()) + 1)], head_fmt)  # make and insert column 1 with index
@@ -572,7 +572,7 @@ select d.date
                 worksheet.write(i + 1, j + 1, value, bold_fmt)
 
             elif isinstance(value, float):
-                value = int(value)
+                value = round(value, 1)
                 worksheet.write(i + 1, j + 1, value, def_fmt)
             else:
                 worksheet.write(i + 1, j + 1, value, def_fmt)

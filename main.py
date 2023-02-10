@@ -1,7 +1,8 @@
 import time
 
 import DB_SQLite
-from New_Class import Day
+#from New_Class import Day
+import New_Class
 from input import Import_Excel
 import date_select
 import os
@@ -50,8 +51,7 @@ def data_analyse():
 
     #  If no this date in DB table="games" - import. If exist - pass
     if DB_SQLite.check_date(date):
-        print()
-        print(f'!   В базе нет игр за ({date}) дату.')
+        print(f'\n!   В базе нет игр за ({date}) дату.')
         print(f'!   Эти игры будут добавлены из Excel файла ({excel_file}) страница ({date})')
         print()
         time.sleep(4)
@@ -64,8 +64,7 @@ def data_analyse():
             for i in games:                                       #  insert all new games to DB table
                 DB_SQLite.insert_games([date, i['player1'], i['player2'], i['player3'], i['player4'], i['score1'], i['score2']])
     else:
-        print()
-        print(f'!   В базе уже есть игры за ({date}) дату.')
+        print(f'\n!   В базе уже есть игры за ({date}) дату.')
         print(f'!   Игры из из Excel файла ({excel_file}) не будут учитываться')
         print()
         time.sleep(3)
@@ -78,7 +77,7 @@ def data_analyse():
     queue = DB_SQLite.table_date_list()
     for i in queue:
         games = DB_SQLite.export_one_day_games(i)
-        Day1 = Day(i, games)
+        Day1 = New_Class.Day(i, games)
         Day1.start_games_counting(Players_Dict)
 
     #  Generate all Statistics Excel report
@@ -113,9 +112,7 @@ def read_config(conf_data):
 
 if __name__ == '__main__':
 
-    print()
-    print()
-    print('                  ПРОГРАММА ДЛЯ РАСЧЕТА РЕЙТИНГА ИГРОКОВ И ')
+    print('\n\n                  ПРОГРАММА ДЛЯ РАСЧЕТА РЕЙТИНГА ИГРОКОВ И ')
     print('        ВЫЧИСЛЕНИЯ ПОБЕДИТЕЛЯ ПО КОЛИЧЕСТВУ ПОБЕД В ТУРНИРНЫЙ ПЕРИОД')
     print('---------------------------------------------------------------------------------')
     print('Выбрав пункт 1 - Программа  будет расчитывать рейтинг игроков.  Игры заносятся по')
@@ -133,15 +130,13 @@ if __name__ == '__main__':
     print('               какая-либо ошибка в ходе выполнения пункта 1')
     print('Выбрав пункт 0 - Выход  из  программы.  Все  операции,  которые были выполнены до')
     print('               этого, будут сохранены')
-    print()
-    print('               version 06.02.2023')
-    print('------------------- -------------------------------------------------------------')
+    print('\n               version 09.02.2023')
+    print('---------------------------------------------------------------------------------')
     print()
 
 
     while True:
-        print()
-        print('    Главное Меню ')
+        print('\n    Главное Меню ')
         print('1.  Ввод данных и расчет рейтинга')
         print('2.  Редактирование базы игр (удаление игрового дня)')
         print('0.  Выход из программы')
@@ -156,7 +151,6 @@ if __name__ == '__main__':
         elif cmd == '2':
             date_games_delete()
         else:
-            print()
-            print('Попробуйте еще раз')
+            print('\n Попробуйте еще раз')
             print()
 
