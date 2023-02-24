@@ -53,8 +53,8 @@ class Import_Excel:
                 if i[z] == side1:
                     row = int(j + 1)
                     column = int(k)
-                    if row <= len(test):
-                        for m in range(len(test)):
+                    for m in range(len(test)):
+                        if row + 1 < len(test):
                             if Import_Excel.check_none(test[row + 1][str(column + 1)]):
                                 a = dict(player1=test[int(row)][str(k)].title(), player2=test[int(row)][str(k + 1)].title(),
                                          player3=test[int(row)][str(k + 2)].title(), player4=test[int(row)][str(k + 3)].title(),
@@ -63,7 +63,6 @@ class Import_Excel:
                                 players.extend(temp_players)
                                 temp_players = []
                                 row = row + 2
-                        row = row + 2
         return players
 
 
