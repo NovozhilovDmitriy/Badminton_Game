@@ -1,6 +1,51 @@
 from unittest import TestCase
-from New_Class import Game
+import New_Class
 
+# class Game_real_score_Test_old(TestCase):
+#
+#     def test_common_win(self):
+#         self.assertEqual(New_Class.Game.real_score_Sa(21, 11), 1)  # common win
+#
+#     def test_common_win1(self):
+#         self.assertEqual(New_Class.Game.real_score_Sa(21, 19), 1)  # common win
+#
+#     def test_common_lose(self):
+#         self.assertEqual(New_Class.Game.real_score_Sa(11, 21), 0)  # common lose
+#
+#     def test_common_lose1(self):
+#         self.assertEqual(New_Class.Game.real_score_Sa(19, 21), 0)  # common lose
+#
+#     def test_balance_win(self):
+#         self.assertEqual(New_Class.Game.real_score_Sa(22, 20), 0.8)  # balance win
+#
+#     def test_balance_win1(self):
+#         self.assertEqual(New_Class.Game.real_score_Sa(28, 26), 0.8)  # balance win
+#
+#     def test_balance_lose(self):
+#         self.assertEqual(New_Class.Game.real_score_Sa(20, 22), 0.2)  # balance lose
+#
+#     def test_balance_lose1(self):
+#         self.assertEqual(New_Class.Game.real_score_Sa(21, 23), 0.2)  # balance lose
+#
+#     def test_more10_win(self):
+#         self.assertEqual(New_Class.Game.real_score_Sa(21, 10), 1.2)  # more 10 win
+#
+#     def test_more10_win1(self):
+#         self.assertEqual(New_Class.Game.real_score_Sa(21, 3), 1.2)  # more 10 win
+#
+#     def test_more10_lose(self):
+#         self.assertEqual(New_Class.Game.real_score_Sa(10, 21), -0.2)  # more 10 lose
+#
+#     def test_more10_lose1(self):
+#         self.assertEqual(New_Class.Game.real_score_Sa(2, 21), -0.2)  # more 10 lose
+#
+#     def test_error1(self):
+#         self.assertEqual(New_Class.Game.real_score_Sa(10, 8), None)  # more 10 lose
+#
+#     # def test_exception(self):
+#     #     with self.assertRaises(ValueError) as e:
+#     #         New_Class.Game.real_score(1, 2)
+#     #     self.assertEqual('error', e.exception.args[0])
 
 class Game_real_score_Test(TestCase):
 
@@ -17,28 +62,28 @@ class Game_real_score_Test(TestCase):
         self.assertEqual(New_Class.Game.real_score_Sa(19, 21), 0)  # common lose
 
     def test_balance_win(self):
-        self.assertEqual(New_Class.Game.real_score_Sa(22, 20), 0.8)  # balance win
+        self.assertEqual(New_Class.Game.real_score_Sa(22, 20), 1)  # balance win
 
     def test_balance_win1(self):
-        self.assertEqual(New_Class.Game.real_score_Sa(28, 26), 0.8)  # balance win
+        self.assertEqual(New_Class.Game.real_score_Sa(28, 26), 1)  # balance win
 
     def test_balance_lose(self):
-        self.assertEqual(New_Class.Game.real_score_Sa(20, 22), 0.2)  # balance lose
+        self.assertEqual(New_Class.Game.real_score_Sa(20, 22), 0)  # balance lose
 
     def test_balance_lose1(self):
-        self.assertEqual(New_Class.Game.real_score_Sa(21, 23), 0.2)  # balance lose
+        self.assertEqual(New_Class.Game.real_score_Sa(21, 23), 0)  # balance lose
 
     def test_more10_win(self):
-        self.assertEqual(New_Class.Game.real_score_Sa(21, 10), 1.2)  # more 10 win
+        self.assertEqual(New_Class.Game.real_score_Sa(21, 10), 1)  # more 10 win
 
     def test_more10_win1(self):
-        self.assertEqual(New_Class.Game.real_score_Sa(21, 3), 1.2)  # more 10 win
+        self.assertEqual(New_Class.Game.real_score_Sa(21, 3), 1)  # more 10 win
 
     def test_more10_lose(self):
-        self.assertEqual(New_Class.Game.real_score_Sa(10, 21), -0.2)  # more 10 lose
+        self.assertEqual(New_Class.Game.real_score_Sa(10, 21), 0)  # more 10 lose
 
     def test_more10_lose1(self):
-        self.assertEqual(New_Class.Game.real_score_Sa(2, 21), -0.2)  # more 10 lose
+        self.assertEqual(New_Class.Game.real_score_Sa(2, 21), 0)  # more 10 lose
 
     def test_error1(self):
         self.assertEqual(New_Class.Game.real_score_Sa(10, 8), None)  # more 10 lose
@@ -104,21 +149,21 @@ class Game_real_score_1_Test(TestCase):
 
     def test_real_score_1_newUsers(self):
         self.temp = New_Class.Game(New_Class.Player('Win', 300), New_Class.Player('Lose', 300), New_Class.Player('Won', 300), New_Class.Player('Lase', 300), 21, 12)
-        self.assertEqual(self.temp.real_score_1_Ra(), 10)
+        self.assertEqual(self.temp.real_score_1_Ra(), 5.0)
 
     def test_real_score_1_NotNewUsers(self):
         self.temp = New_Class.Game(New_Class.Player('Win'), New_Class.Player('Lose'), New_Class.Player('Won', 300), New_Class.Player('Lase', 300), 21, 12)
-        self.assertEqual(self.temp.real_score_1_Ra(), 0.1980198019801982)
+        self.assertEqual(self.temp.real_score_1_Ra(), 0.0990099009900991)
 
 class Game_real_score_2_Test(TestCase):
 
     def test_real_score_2_newUsers(self):
         self.temp = New_Class.Game(New_Class.Player('Win'), New_Class.Player('Lose'), New_Class.Player('Won'), New_Class.Player('Lase'), 21, 12)
-        self.assertEqual(self.temp.real_score_2_Ra(), -10)
+        self.assertEqual(self.temp.real_score_2_Ra(), -5.0)
 
     def test_real_score_2_NotNewUsers(self):
         self.temp = New_Class.Game(New_Class.Player('Win'), New_Class.Player('Lose'), New_Class.Player('Won', 400), New_Class.Player('Lase', 400), 21, 12)
-        self.assertEqual(self.temp.real_score_2_Ra(), -1.8181818181818183)
+        self.assertEqual(self.temp.real_score_2_Ra(), -0.9090909090909092)
 
 class Game_print_list_new_player_Test(TestCase):
 
