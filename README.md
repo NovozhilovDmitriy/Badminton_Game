@@ -5,22 +5,27 @@ This code use Elo rating formula for count personal score of each player.
 If several players want to play local championship and the same time to know progress of their playing, 
 they need collect players data and count rating. This code exactly for such task.
 The team will know personal rating and also could start (by start day/ end day) championship
-Code use SQLite DB for store games data (date of play/players/ score of play) and then
+Code use SQLite DB for store games data (date of games/players/score of each game) and then
 process this data every time for create final result.
 This was done for optimization process. In any time you can change formula of calculation
 and all statistics will recreate automatically.
 
 ## Usage
-For windows use I compile main.exe file. For details use Compile chapter. 
+For windows use I compile main.exe file. For details use Compile chapter.
+Or you can download final version for Win use (Badminton_score folder)
+How to start:
+- You need execute on Win host **Badminton_*.exe** file and follow description.
+
 For correct use should exist several files:
-- description.txt - this is template with description of each report what will import to excel
+- **description.txt** - this is template with description of each report what will import to excel
 statistics file every time what code run
-- Games.xlsx - this is list of all games. Please use correct templates because code don't process all
-unexpected data and could generate error
-- list_of_games.db - this is SQLite DB file what will generate automatically each time. 
+- **Games.xlsx** - this is list of all games. Please use correct templates because code don't process all
+unexpected data and could generate error. (for new project you can rename template
+_Расстановки.xlsx_ file and change name in _config.ini_)
+- **list_of_games.db** - this is SQLite DB file what will generate automatically each time. 
 Keep it in the same folder of code
-- Total_Stat.xlsx - this is report file, it will delete and create from begining every time.
-- config.ini - this if config file, where you can configure champiship start time and end time
+- **Total_Stat.xlsx** - this is report file, it will delete and create from begining every time.
+- **config.ini** - this if config file, where you can configure champiship start time and end time
 and configure name of Games excel list. (PS: name should be Latin characters)
 
 ## Compiler
@@ -39,7 +44,7 @@ and need to delete this data and import again.
 
 ## Logic of statistics
 In the report you can find two main score:
-- Championat ship score - this is counting ONLY by WIN ot Lose. No matter how you win or
+- Championship ship score - this is counting ONLY by WIN ot Lose. No matter how you win or
 how you lose. Win = 1, Lose = 0. Simple logic. Who win more - winner.
 - Personal score - here we use Elo logic for count personal score. Here very importance 
 who win and how win. If you win pair with avarage rating worse than your, you will get 
