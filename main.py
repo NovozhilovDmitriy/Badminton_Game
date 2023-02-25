@@ -1,13 +1,11 @@
 import time
 
 import DB_SQLite
-#from New_Class import Day
 import New_Class
 from input import Import_Excel
 import date_select
 import os
 import configparser
-
 
 
 def data_analyse():
@@ -81,7 +79,15 @@ def data_analyse():
         Day1.start_games_counting(Players_Dict)
 
     #  Generate all Statistics Excel report
-    DB_SQLite.select_stat1()
+    # max_min_score(Players_Dict)
+    DB_SQLite.select_stat1(max_min_score(Players_Dict)[0], max_min_score(Players_Dict)[1])
+
+def max_min_score(Players_Dict):
+    max_score = max(enumerate(Players_Dict), key=lambda arg:arg[1]['score'])[0]
+    min_score = min(enumerate(Players_Dict), key=lambda arg:arg[1]['score'])[0]
+    # test_max = math.ceil(int(Players_Dict[max_score]['score']))
+    # test_min = math.floor(int(Players_Dict[min_score]['score']))
+    return int(Players_Dict[max_score]['score']) + 10, int(Players_Dict[min_score]['score']) - 10
 
 
 def date_games_delete():
@@ -130,7 +136,7 @@ if __name__ == '__main__':
     print('               какая-либо ошибка в ходе выполнения пункта 1')
     print('Выбрав пункт 0 - Выход  из  программы.  Все  операции,  которые были выполнены до')
     print('               этого, будут сохранены')
-    print('\n               version 24.02.2023')
+    print('\n               version 25.02.2023')
     print('---------------------------------------------------------------------------------')
     print()
 

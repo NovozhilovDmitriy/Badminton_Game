@@ -227,7 +227,10 @@ def drop_view_table():
     conn.commit()
     return cur.lastrowid
 
-def select_stat1():
+def select_stat1(stat_max, stat_min):
+
+    stat_max = stat_max
+    stat_min = stat_min
 
     ch_start = read_config('ch_start')
     ch_end = read_config('ch_end')
@@ -713,8 +716,11 @@ select d.date
 
     # Configure the chart axes.
     chart.set_x_axis({'name': 'дата игры'})
-    chart.set_y_axis({'name': 'Рейтинг'})
-                      #'major_gridlines': {'visible': False}})
+    chart.set_y_axis({'name': 'Рейтинг',
+                      'major_unit': 10,
+                      'min': stat_min,
+                      'max': stat_max
+                      })
     chart.set_legend({'position': 'top'})
     chart.show_blanks_as('span')
     chart.set_size({'width': 1200, 'height': 580})
