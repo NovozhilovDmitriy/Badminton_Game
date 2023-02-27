@@ -93,6 +93,7 @@ class Game_real_score_Test(TestCase):
     #         New_Class.Game.real_score(1, 2)
     #     self.assertEqual('error', e.exception.args[0])
 
+
 class Game_win_lose_max_min_Test(TestCase):
 
     def test_common_win(self):
@@ -124,6 +125,7 @@ class Game_get_pair_avr_score_Test(TestCase):
         self.temp = New_Class.Game(New_Class.Player('Win'), New_Class.Player('Lose'), New_Class.Player('Won', 100), New_Class.Player('Lase', 200), 21, 12)
         self.assertEqual(self.temp.get_pair_avr_score(self.temp.players[2], self.temp.players[3]), 150)
 
+
 class Game_wait_score_1_Test(TestCase):
 
     def test_wait_score_1_newUsers(self):
@@ -133,6 +135,7 @@ class Game_wait_score_1_Test(TestCase):
     def test_wait_score_1_NotNewUsers(self):
         self.temp = New_Class.Game(New_Class.Player('Win'), New_Class.Player('Lose'), New_Class.Player('Won', 450), New_Class.Player('Lase', 450), 21, 12)
         self.assertEqual(self.temp.wait_score_1_Ea(), 0.7597469266479578)
+
 
 class Game_wait_score_2_Test(TestCase):
 
@@ -155,6 +158,7 @@ class Game_real_score_1_Test(TestCase):
         self.temp = New_Class.Game(New_Class.Player('Win'), New_Class.Player('Lose'), New_Class.Player('Won', 300), New_Class.Player('Lase', 300), 21, 12)
         self.assertEqual(self.temp.real_score_1_Ra(), 0.0990099009900991)
 
+
 class Game_real_score_2_Test(TestCase):
 
     def test_real_score_2_newUsers(self):
@@ -164,6 +168,7 @@ class Game_real_score_2_Test(TestCase):
     def test_real_score_2_NotNewUsers(self):
         self.temp = New_Class.Game(New_Class.Player('Win'), New_Class.Player('Lose'), New_Class.Player('Won', 400), New_Class.Player('Lase', 400), 21, 12)
         self.assertEqual(self.temp.real_score_2_Ra(), -0.9090909090909092)
+
 
 class Game_print_list_new_player_Test(TestCase):
 

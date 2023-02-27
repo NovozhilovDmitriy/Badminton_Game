@@ -45,6 +45,13 @@ class Import_Excel:
             print()
 
     @staticmethod
+    def check_correct_score(one, two):
+        if (10 >= two < one >= 21) or (10 >= one < two) or (20 > one < two) or (one > two >= 20) or (10 < two < one >= 21):
+            return True
+        else:
+            return False
+
+    @staticmethod
     def import_excel(test):
         temp_players = []
         players = []
