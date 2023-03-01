@@ -45,11 +45,22 @@ class Import_Excel:
             print()
 
     @staticmethod
-    def check_correct_score(one, two):
-        if (10 >= two < one >= 21) or (10 >= one < two) or (20 > one < two) or (one > two >= 20) or (10 < two < one >= 21):
-            return True
+    def check_correct_score(a, b):
+        if not isinstance(a, int) and isinstance(b, int):
+            return a, b
+        elif a == b:
+            return a, b
+        elif max(a, b) > 30:
+            return a, b
+        elif max(a, b) > 21 and not (max(a, b) - min(a, b)) == 2:
+            return a, b
+        elif max(a, b) == 21 and 19 < min(a, b):
+            return a, b
+        elif max(a, b) < 21:
+            return a, b
         else:
-            return False
+            return True
+
 
     @staticmethod
     def import_excel(test):
