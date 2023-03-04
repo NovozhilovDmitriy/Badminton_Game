@@ -29,8 +29,8 @@ class Import_Excel:
                 return True
         else:
             print()
-            print('!!!!  В Excel файле (%s) не найдена страница с именем (%s) для этого игрового дня.' % (file, sheet))
-            print('      Статистика будет пересчитана без учета этих данных')
+            print('ВНИМАНИЕ  В Excel файле (%s) не найдена страница с именем (%s) для этого игрового дня.' % (file, sheet))
+            print('          Статистика будет пересчитана без учета этих данных......')
             print()
             time.sleep(4)
             return False
@@ -41,25 +41,55 @@ class Import_Excel:
             return Import_Excel.check_sheet(file, sheet)
         else:
             print()
-            print('!!!!  Excel файл (%s) не найден. Статистика будет пересчитана без учета этих данных.' % (file))
+            print('ВНИМАНИЕ  Excel файл (%s) не найден. Статистика будет пересчитана без учета этих данных.' % (file))
             print()
 
     @staticmethod
     def check_correct_score(a, b):
         if not isinstance(a, int) and isinstance(b, int):
-            return a, b
+            print()
+            print(f'!!!ОШИБКА!!!   Найдена игра с некорректным счетом ({a},{b}), должны быть целые и положительные числа')
+            return False
         elif a == b:
-            return a, b
+            print()
+            print(f'!!!ОШИБКА!!!   Найдена игра с некорректным счетом ({a},{b}), счет не может быть равным')
+            return False
         elif max(a, b) > 30:
-            return a, b
+            print()
+            print(f'!!!ОШИБКА!!!   Найдена игра с некорректным счетом ({a},{b}), счет не может быть больше 30')
+            return False
         elif max(a, b) > 21 and not (max(a, b) - min(a, b)) == 2:
-            return a, b
+            print()
+            print(f'!!!ОШИБКА!!!   Найдена игра с некорректным счетом ({a},{b}), при игре на Больше\Меньше')
+            print('               разница в счете должна быть 2 очка')
+            return False
         elif max(a, b) == 21 and 19 < min(a, b):
-            return a, b
+            print()
+            print(f'!!!ОШИБКА!!!   Найдена игра с некорректным счетом ({a},{b}), разница в счете должна быть 2 очка')
+            return False
         elif max(a, b) < 21:
-            return a, b
+            print()
+            print(f'!!!ОШИБКА!!!   Найдена игра с некорректным счетом ({a},{b}), победитель должен набрать 21 очко')
+            return False
         else:
             return True
+    @staticmethod
+    def open_check_score(test):
+        for i, j in zip(test, (0, 1)):
+            for z, k in zip(i, range(len(i))):
+                if i[z] == side1:
+                    row = int(j + 1)
+                    column = int(k)
+                    for m in range(len(test)):
+                        if row + 1 < len(test):
+                            if Import_Excel.check_none(test[row + 1][str(column + 1)]):
+                                a = test[int(row + 1)][str(k + 1)]
+                                b = test[int(row + 1)][str(k + 2)]
+                                if Import_Excel.check_correct_score(a, b):
+                                    row = row + 2
+                                else:
+                                    return False
+        return True
 
 
     @staticmethod

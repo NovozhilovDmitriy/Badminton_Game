@@ -32,8 +32,8 @@ def data_analyse():
             try:
                 os.remove(stat_file)
             except OSError:
-                print(f'!!!!      Excel  файл  статистики  ({stat_file})  в  данный  момент  ОТКРЫТ')
-                print(' !!!!      и не может быть удален программой. Зайкройте файл и повторите операцию')
+                print(f'!!!ОШИБКА!!!      Excel  файл  статистики  ({stat_file})  в  данный  момент  ОТКРЫТ')
+                print(f'                  и не может быть удален программой. Зайкройте файл и повторите операцию')
                 input('Нажмите ENTER как будете готовы повторить попытку удаления файла......')
                 print('Проверяем........')
                 print()
@@ -49,21 +49,28 @@ def data_analyse():
 
     #  If no this date in DB table="games" - import. If exist - pass
     if DB_SQLite.check_date(date):
-        print(f'\n!   В базе нет игр за ({date}) дату.')
-        print(f'!   Эти игры будут добавлены из Excel файла ({excel_file}) страница ({date})')
         print()
-        time.sleep(4)
-
-
-       # if Import_Excel.check_sheet(excel_file, date):
+        print(f'ВНИМАНИЕ   В базе нет игр за ({date}) дату.')
+        print(f'           Эти игры будут добавлены из Excel файла ({excel_file})')
+        print(f'           Проверям наличие страницы ({date}) и корректность заполнения счета игр.......')
+        time.sleep(2)
         if Import_Excel.check_file_exist(excel_file, date):
-            games = Import_Excel.load(excel_file, date)           #  Convert excel to dict
-            games = Import_Excel.import_excel(games)              #  Load dict to Players dict format
-            for i in games:                                       #  insert all new games to DB table
-                DB_SQLite.insert_games([date, i['player1'], i['player2'], i['player3'], i['player4'], i['score1'], i['score2']])
+                games = Import_Excel.load(excel_file, date)           #  Convert excel to dict
+                if Import_Excel.open_check_score(games):
+                    #games = Import_Excel.load(excel_file, date)           #  Convert excel to dict
+                    games = Import_Excel.import_excel(games)              #  Load dict to Players dict format
+                    for i in games:                                       #  insert all new games to DB table
+                        DB_SQLite.insert_games([date, i['player1'], i['player2'], i['player3'], i['player4'], i['score1'], i['score2']])
+
+                else:
+                    print('ВНИМАНИЕ       В статистике есть игры с некорректным счетом, ВСЕ игры этого дня НЕ учитываются при расчете')
+                    print('               Продолжаем расчет статистики.......')
+                    print()
+                    time.sleep(4)
     else:
-        print(f'\n!   В базе уже есть игры за ({date}) дату.')
-        print(f'!   Игры из из Excel файла ({excel_file}) не будут учитываться')
+        print(f'\nВНИМАНИЕ   В базе уже есть игры за ({date}) дату.')
+        print(f'           Игры из из Excel файла ({excel_file}) не будут учитываться')
+        print(f'           Продолжаем расчет статистики.......')
         print()
         time.sleep(3)
 
@@ -95,11 +102,11 @@ def date_games_delete():
     date = date_select.date_input()
 
     if DB_SQLite.check_date(date):
-        print(f'!!!!   В базе нет игр за ({date}) дату.')
+        print(f'ВНИМАНИЕ   В базе нет игр за ({date}) дату.')
     else:
         count = DB_SQLite.count_games_in_day_from_db(date)
         DB_SQLite.del_games_from_db(date)
-        print(f'!!!!   Из базы было удалено ({count[0]}) игр за ({date}) дату')
+        print(f'ВНИМАНИЕ   Из базы было удалено ({count[0]}) игр за ({date}) дату')
 
 
 
@@ -136,7 +143,7 @@ if __name__ == '__main__':
     print('               какая-либо ошибка в ходе выполнения пункта 1')
     print('Выбрав пункт 0 - Выход  из  программы.  Все  операции,  которые были выполнены до')
     print('               этого, будут сохранены')
-    print('\n               version 25.02.2023')
+    print('\n               version 04.03.2023')
     print('---------------------------------------------------------------------------------')
     print()
 

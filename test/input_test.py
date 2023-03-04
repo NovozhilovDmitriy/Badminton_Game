@@ -35,25 +35,25 @@ class ImportExcelCheckCorrectScoreTest(TestCase):
         self.assertEqual(input.Import_Excel.check_correct_score(28, 30), True)
 
     def test_negative1(self):
-        self.assertEqual(input.Import_Excel.check_correct_score(21, 21), (21, 21))
+        self.assertEqual(input.Import_Excel.check_correct_score(21, 21), False)
 
     def test_negative2(self):
-        self.assertEqual(input.Import_Excel.check_correct_score(0, 0), (0, 0))
+        self.assertEqual(input.Import_Excel.check_correct_score(0, 0), False)
 
     def test_negative3(self):
-        self.assertEqual(input.Import_Excel.check_correct_score('null', 21), ('null', 21))
+        self.assertEqual(input.Import_Excel.check_correct_score('null', 21), False)
 
     def test_negative4(self):
-        self.assertEqual(input.Import_Excel.check_correct_score('null', 'null'), ('null', 'null'))
+        self.assertEqual(input.Import_Excel.check_correct_score('null', 'null'), False)
 
     def test_negative5(self):
-        self.assertEqual(input.Import_Excel.check_correct_score(30, 1), (30, 1))
+        self.assertEqual(input.Import_Excel.check_correct_score(30, 1), False)
 
     def test_negative6(self):
-        self.assertEqual(input.Import_Excel.check_correct_score(21, 20), (21, 20))
+        self.assertEqual(input.Import_Excel.check_correct_score(21, 20), False)
 
     def test_negative7(self):
-        self.assertEqual(input.Import_Excel.check_correct_score(23, 22), (23, 22))
+        self.assertEqual(input.Import_Excel.check_correct_score(23, 22), False)
 
     def test_negative8(self):
-        self.assertEqual(input.Import_Excel.check_correct_score(1, 22), (1, 22))
+        self.assertEqual(input.Import_Excel.check_correct_score(1, 22), False)
