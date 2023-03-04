@@ -6,6 +6,8 @@ from input import Import_Excel
 import date_select
 import os
 import configparser
+# import sys
+# sys.stdout.reconfigure(encoding="utf-8")
 
 
 def data_analyse():
