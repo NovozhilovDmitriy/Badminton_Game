@@ -6,8 +6,6 @@ from input import Import_Excel
 import date_select
 import os
 import configparser
-# import sys
-# sys.stdout.reconfigure(encoding="utf-8")
 
 
 def data_analyse():
@@ -26,6 +24,10 @@ def data_analyse():
 
     #  Static name of final report excel file.
     stat_file = 'Total_Stat.xlsx'
+
+    #  Value for MAX_MIN def. Player score.
+    max_score = 0           #  This is start of max score. For chart report
+    min_score = 10000       #  This is start of min score. For chart report
 
     #  Check if report file exist -> delete. If not exist -> will generate new one later
     if os.path.exists(stat_file):
@@ -55,26 +57,29 @@ def data_analyse():
         print(f'ВНИМАНИЕ   В базе нет игр за ({date}) дату.')
         print(f'           Эти игры будут добавлены из Excel файла ({excel_file})')
         print(f'           Проверям наличие страницы ({date}) и корректность заполнения счета игр.......')
-        time.sleep(2)
+        #time.sleep(2)
+        show_sleep_time(2)
         if Import_Excel.check_file_exist(excel_file, date):
-                games = Import_Excel.load(excel_file, date)           #  Convert excel to dict
-                if Import_Excel.open_check_score(games):
-                    #games = Import_Excel.load(excel_file, date)           #  Convert excel to dict
+                games = Import_Excel.load(excel_file, date)               #  Convert excel to dict
+                if Import_Excel.open_check_score(games):                  #  Check template game score. If incorrect - ignore import
+                    #games = Import_Excel.load(excel_file, date)          #  Convert excel to dict
                     games = Import_Excel.import_excel(games)              #  Load dict to Players dict format
                     for i in games:                                       #  insert all new games to DB table
                         DB_SQLite.insert_games([date, i['player1'], i['player2'], i['player3'], i['player4'], i['score1'], i['score2']])
 
                 else:
-                    print('ВНИМАНИЕ       В статистике есть игры с некорректным счетом, ВСЕ игры этого дня НЕ учитываются при расчете')
-                    print('               Продолжаем расчет статистики.......')
+                    print('ВНИМАНИЕ   В статистике есть игры с некорректным счетом, ВСЕ игры этого дня НЕ учитываются при расчете')
+                    print('           Продолжаем расчет статистики.......')
                     print()
-                    time.sleep(4)
+                    show_sleep_time(4)
+                    #time.sleep(4)
     else:
         print(f'\nВНИМАНИЕ   В базе уже есть игры за ({date}) дату.')
         print(f'           Игры из из Excel файла ({excel_file}) не будут учитываться')
         print(f'           Продолжаем расчет статистики.......')
         print()
-        time.sleep(3)
+        show_sleep_time(3)
+        #time.sleep(3)
 
     #  drop stat table, create stat table
     DB_SQLite.drop_table_stat('stat')
@@ -82,21 +87,31 @@ def data_analyse():
 
     #  Load the oldest day games from DB table to dict and process it. Do it for each next day from table.
     queue = DB_SQLite.table_date_list()
+
     for i in queue:
         games = DB_SQLite.export_one_day_games(i)
         Day1 = New_Class.Day(i, games)
         Day1.start_games_counting(Players_Dict)
-
+        max_score = max(max_score, max_min_score(Players_Dict)[0])  #  Find max player score for chart report
+        min_score = min(min_score, max_min_score(Players_Dict)[1])  #  Find min player score for chart report
     #  Generate all Statistics Excel report
-    # max_min_score(Players_Dict)
-    DB_SQLite.select_stat1(max_min_score(Players_Dict)[0], max_min_score(Players_Dict)[1])
+    #  max_min_score(Players_Dict)
+    #  DB_SQLite.select_stat1(max_min_score(Players_Dict)[0], max_min_score(Players_Dict)[1])
+    DB_SQLite.select_stat1(max_score, min_score)
+
 
 def max_min_score(Players_Dict):
+    #  Find MAX players score and MIN player score in DB and return result. Need for print correct Chart in report.
     max_score = max(enumerate(Players_Dict), key=lambda arg:arg[1]['score'])[0]
     min_score = min(enumerate(Players_Dict), key=lambda arg:arg[1]['score'])[0]
-    # test_max = math.ceil(int(Players_Dict[max_score]['score']))
-    # test_min = math.floor(int(Players_Dict[min_score]['score']))
-    return int(Players_Dict[max_score]['score']) + 10, int(Players_Dict[min_score]['score']) - 10
+    return int(Players_Dict[max_score]['score']) + 5, int(Players_Dict[min_score]['score']) - 5
+
+
+def show_sleep_time(t):
+    for i in range(t, 0, -1):
+        #print(f"Продолжим через {i}")
+        print(f"{i}..", end = "")
+        time.sleep(1)
 
 
 def date_games_delete():
@@ -145,7 +160,7 @@ if __name__ == '__main__':
     print('               какая-либо ошибка в ходе выполнения пункта 1')
     print('Выбрав пункт 0 - Выход  из  программы.  Все  операции,  которые были выполнены до')
     print('               этого, будут сохранены')
-    print('\n               version 04.03.2023')
+    print('\n               version 17.03.2023')
     print('---------------------------------------------------------------------------------')
     print()
 

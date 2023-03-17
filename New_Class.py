@@ -75,7 +75,7 @@ class Game:
     @staticmethod
     def print_list_new_player(date, temp_dict):
         if len(temp_dict) != 0:
-            print(f'+     В этой день ({date}) у нас новый(вые) игрок(и) - ', ", ".join(temp_dict))
+            print(f'\n+     В этой игровой день ({date}) у нас новый(вые) игрок(и) - ', ", ".join(temp_dict))
         else:
             pass
 
@@ -329,7 +329,7 @@ class Day:
             i['daily_score'] = 0
             #print(f"{i['name']}={i['score']}")
         count_games = DB_SQLite.count_games_in_day_from_db(self.date)
-        print(f'  В этот игровой день ({self.date}) было ({count_games[0]}) игр.')
+        print(f'      В этот игровой день ({self.date}) было ({count_games[0]}) игр.')
         #print(f'В этот игровой день ({self.date}) было ({count_games[0]}) игр. Игроки: ', *(i['name'] for i in Players_Dict),',')
         #print(f'После игрового дня {self.date} статистика', *((i['name'], int(i['score'])) for i in Players_Dict))
         print()

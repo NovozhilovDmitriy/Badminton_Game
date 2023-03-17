@@ -29,9 +29,10 @@ class Import_Excel:
                 return True
         else:
             print()
-            print('ВНИМАНИЕ  В Excel файле (%s) не найдена страница с именем (%s) для этого игрового дня.' % (file, sheet))
-            print('          Статистика будет пересчитана без учета этих данных......')
+            print('ВНИМАНИЕ   В Excel файле (%s) не найдена страница с именем (%s) для этого игрового дня.' % (file, sheet))
+            print('           Статистика будет пересчитана без учета этих данных......')
             print()
+            #show_sleep_time(2)
             time.sleep(4)
             return False
 
@@ -41,11 +42,12 @@ class Import_Excel:
             return Import_Excel.check_sheet(file, sheet)
         else:
             print()
-            print('ВНИМАНИЕ  Excel файл (%s) не найден. Статистика будет пересчитана без учета этих данных.' % (file))
+            print('ВНИМАНИЕ   Excel файл (%s) не найден. Статистика будет пересчитана без учета этих данных.' % (file))
             print()
 
     @staticmethod
     def check_correct_score(a, b):
+        #  Check template score correct  for each game for. In incorrect - False and print description
         if not isinstance(a, int) and isinstance(b, int):
             print()
             print(f'!!!ОШИБКА!!!   Найдена игра с некорректным счетом ({a},{b}), должны быть целые и положительные числа')
@@ -75,6 +77,7 @@ class Import_Excel:
             return True
     @staticmethod
     def open_check_score(test):
+        #  Function for parse Excel template and execute def check score.
         for i, j in zip(test, (0, 1)):
             for z, k in zip(i, range(len(i))):
                 if i[z] == side1:
