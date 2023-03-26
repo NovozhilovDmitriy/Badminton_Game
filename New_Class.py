@@ -104,7 +104,7 @@ class Game:
     def get_pair_avr_score(self, pl_1, pl_2):
         #  Count AVERAGE score of the pairs by formula (score1+score2)/2
         return (pl_1.score + pl_2.score) / 2
-
+        # return max(pl_1.score,pl_2.score) * 0.55 + min(pl_1.score,pl_2.score) * 0.45
 
     def wait_score_2_Ea(self):
         #  Found waiting score of the Pair1 in game by Elo formula. (Ea)

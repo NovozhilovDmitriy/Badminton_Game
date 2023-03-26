@@ -137,6 +137,10 @@ def read_config(conf_data):
         return config['Championship']['start_day']
     elif conf_data == 'ch_end':
         return config['Championship']['end_day']
+    elif conf_data == 'ch_active':
+        return int(config['Championship']['active_players'])
+    elif conf_data == 'ch_percent':
+        return float(config['Championship']['percent'])
     else:
         return False
 
@@ -160,7 +164,7 @@ if __name__ == '__main__':
     print('               какая-либо ошибка в ходе выполнения пункта 1')
     print('Выбрав пункт 0 - Выход  из  программы.  Все  операции,  которые были выполнены до')
     print('               этого, будут сохранены')
-    print('\n               version 17.03.2023')
+    print('\n               version 26.03.2023')
     print('---------------------------------------------------------------------------------')
     print()
 

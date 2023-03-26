@@ -234,6 +234,8 @@ def select_stat1(stat_max, stat_min):
 
     ch_start = read_config('ch_start')
     ch_end = read_config('ch_end')
+    ch_active = read_config('ch_active')
+    ch_percent = read_config('ch_percent')
 
     Players_Championship_Day_Stat = '''
     select player   -- Игрок
@@ -249,19 +251,21 @@ def select_stat1(stat_max, stat_min):
     '''
 
     Players_Championship_Total_Stat = '''
-    with d as
-( select distinct date from stat where date between ? and ? -- параметры, определяющие период турнира
+    with tournament_stat as
+( select * from v_player_stat where date between ? and ?  -- параметры, определяющие период турнира
+), d as
+( select distinct date from tournament_stat
 ), pl as
-( select t1.player, min(t1.date) min_date from d inner join v_player_stat t1 on t1.date = d.date group by t1.player
+( select t1.player, min(t1.date) min_date from tournament_stat t1 group by t1.player
 ), t2 as
 ( select pl.player
        , d.date
        , sum(count(win_lose)) over (partition by pl.player order by d.date) cnt_game
        , sum(sum(case when win_lose = 1 then 1 end)) over (partition by pl.player order by d.date) cnt_win
-       , 1.0*coalesce(sum(sum(case when win_lose = 1 then 1 end)) over (partition by pl.player order by d.date), 0)/sum(count(win_lose)) over (partition by pl.player order by d.date) pct_win -- % побед
+       , 100*coalesce(sum(sum(case when win_lose = 1 then 1 end)) over (partition by pl.player order by d.date), 0)/sum(count(win_lose)) over (partition by pl.player order by d.date) pct_win -- % побед
        , max(d.date) over () last_date
     from d cross join pl
-         left outer join v_player_stat t1 on t1.date = d.date and t1.player = pl.player and d.date >= pl.min_date  
+         left outer join tournament_stat t1 on t1.date = d.date and t1.player = pl.player and d.date >= pl.min_date  
     group by pl.player, d.date
 ), t3 as
 ( select t2.*
@@ -276,11 +280,10 @@ select player
      , cnt_game -- сколько игр было сыграно
      , pct_win -- % побед
      , case when lag_player_rank <> player_rank then lag_player_rank-player_rank end diff_rank
-     , 1 prize -- Добавить вхождение в призы (10 игроков/40% от avg)
+     , case when cnt_game > (select avg(cnt_game) * ? from (select player, count(*) cnt_game, row_number() over (order by count(*) desc) rn from tournament_stat group by player) where rn <= ?) then ' ' else 'НЕТ' end prize -- Добавить вхождение в призы (10 игроков/40% от avg)
   from t4
   where date = last_date
-  order by pct_win desc, cnt_game desc;
-    '''
+  order by pct_win desc, cnt_game desc;'''
 
 
     Players_Last_Day_Stat = '''
@@ -513,8 +516,8 @@ select d.date
 
     # -----------------------------------------------------------------------------------------------
     worksheet = workbook.add_worksheet('Чемпионат 2023')
-    mysel = c.execute(Players_Championship_Total_Stat, (ch_start, ch_end))
-    header = ['Место', 'Игрок', 'Всего Игр', 'Рейтинг', 'Динамика']
+    mysel = c.execute(Players_Championship_Total_Stat, (ch_start, ch_end, ch_percent, ch_active))
+    header = ['Место', 'Игрок', 'Всего Игр', 'Рейтинг', 'Динамика', 'В зачет']
     for idx, col in enumerate(header):
         worksheet.write(0, idx, col, head_fmt)  # write the column name one time in a row
 
@@ -532,12 +535,12 @@ select d.date
             else:
                 worksheet.write(i + 1, j + 1, value, def_fmt)
 
-    worksheet.write_column(1, 0, [i for i in range(1, len(c.execute(Players_Championship_Total_Stat, (ch_start, ch_end)).fetchall()) + 1)],
+    worksheet.write_column(1, 0, [i for i in range(1, len(c.execute(Players_Championship_Total_Stat, (ch_start, ch_end, ch_percent, ch_active)).fetchall()) + 1)],
                            head_fmt)  # make and insert column 1 with index
 
     worksheet.set_column('B:B', 18)
     worksheet.set_column('C:G', 11)
-    worksheet.set_column('F:F', 18)
+    #worksheet.set_column('F:F', 18)
 
     # -----------------------------------------------------------------------------------------------
     #  Last-Day worksheet creation
