@@ -14,7 +14,7 @@ and all statistics will recreate automatically.
 For windows use I compile main.exe file. For details use Compile chapter.
 Or you can download final version for Win use (Badminton_score folder)
 How to start:
-- You need execute on Win host **Badminton_*.exe** file and follow description.
+- You need execute on Win host **Badminton.exe** file and follow description.
 
 For correct use should exist several files:
 - **description.txt** - this is template with description of each report what will import to excel
@@ -25,8 +25,11 @@ _Расстановки.xlsx_ file and change name in _config.ini_)
 - **list_of_games.db** - this is SQLite DB file what will generate automatically each time. 
 Keep it in the same folder of code
 - **Total_Stat.xlsx** - this is report file, it will delete and create from begining every time.
-- **config.ini** - this if config file, where you can configure champiship start time and end time
-and configure name of Games excel list. (PS: name should be Latin characters)
+- **conf.ini** - this if config file, where you can configure champiship start time and end time
+and configure name of Games excel list. (PS: name should be Latin characters). You can configure display information
+in Championship total report where mark users who don't reach play activities for be in rank. active_players = 10
+means you will choose average of 10 users with most biggest play days and (percent= 0.4) get 40% of this to compare
+with others. Who less - not reach Championship rule.
 
 ## Compiler
 From my enviroment I use this command for create one package
