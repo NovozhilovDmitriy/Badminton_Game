@@ -262,7 +262,7 @@ def select_stat1(stat_max, stat_min):
        , d.date
        , sum(count(win_lose)) over (partition by pl.player order by d.date) cnt_game
        , sum(sum(case when win_lose = 1 then 1 end)) over (partition by pl.player order by d.date) cnt_win
-       , 100*coalesce(sum(sum(case when win_lose = 1 then 1 end)) over (partition by pl.player order by d.date), 0)/sum(count(win_lose)) over (partition by pl.player order by d.date) pct_win -- % побед
+       , 1.0*coalesce(sum(sum(case when win_lose = 1 then 1 end)) over (partition by pl.player order by d.date), 0)/sum(count(win_lose)) over (partition by pl.player order by d.date) pct_win -- % побед
        , max(d.date) over () last_date
     from d cross join pl
          left outer join tournament_stat t1 on t1.date = d.date and t1.player = pl.player and d.date >= pl.min_date  
