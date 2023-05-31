@@ -60,7 +60,7 @@ class Import_Excel:
             print()
             print(f'!!!ОШИБКА!!!   Найдена игра с некорректным счетом ({a},{b}), счет не может быть больше 30')
             return False
-        elif max(a, b) > 21 and not (max(a, b) - min(a, b)) == 2:
+        elif 30 < max(a, b) > 21 and not (max(a, b) - min(a, b)) == 2:
             print()
             print(f'!!!ОШИБКА!!!   Найдена игра с некорректным счетом ({a},{b}), при игре на Больше\Меньше')
             print('               разница в счете должна быть 2 очка')
