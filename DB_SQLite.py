@@ -353,7 +353,7 @@ select player
      , 100*coalesce(sum(case when win_lose = 1 then 1 end), 0)/count(*) pct_win
   from v_player_stat t1
   group by player, partner
-  having count(*) > 2
+  having count(*) > 10
   order by player, pct_win desc;'''
 
     Players_win_opponent_stat = '''with t1 as
@@ -373,7 +373,7 @@ select player
          , 100*coalesce(sum(case when win>0 then 1 end), 0)/count(*) pct_win
       from t1
       group by player, opponent
-      having count(*) > 2
+      having count(*) > 10
       order by player, pct_win desc;'''
 
     Players_daily_stat ='''with d as
@@ -389,6 +389,22 @@ select d.date
   group by pl.player, d.date
   order by pl.player, d.date;'''
 
+    Players_Championship_daily_stat = '''
+    with tournament_stat as
+( select * from v_player_stat where date between ? and ?  -- параметры, определяющие период турнира
+), d as
+( select distinct date from tournament_stat
+), pl as
+( select player, min(date) min_date from tournament_stat group by player
+)
+select d.date
+     , pl.player
+     , case when count(Ra) <> 0 then 1.0*coalesce(sum(case when win_lose = 1 then 1 end), 0)/count(win_lose) end pct_win -- % побед
+  from d cross join pl
+       left outer join v_player_stat t1 on t1.date = d.date and t1.player = pl.player
+  group by pl.player, d.date
+  order by pl.player, d.date;
+    '''
 
     import xlsxwriter
 
@@ -541,6 +557,57 @@ select d.date
     worksheet.set_column('B:B', 18)
     worksheet.set_column('C:G', 11)
     #worksheet.set_column('F:F', 18)
+    # -----------------------------------------------------------------------------------------------
+    # Grapth of Championat stat
+    worksheet = workbook.add_worksheet('График Чемпионата')
+    mysel = c.execute(Players_Championship_daily_stat, (ch_start, ch_end))
+
+    r = 1
+    cl = 0
+    name = ''
+    dt = ''
+    for i, row in enumerate(mysel):
+        for j, value in enumerate(row):
+            if j == 0:
+                if i == 0:
+                    dt = value
+                    worksheet.write(r, 0, value)
+                if value != dt:
+                    worksheet.write(r, 0, value)
+            elif j == 1:
+                if value != name:
+                    cl += 1
+                    r = 1
+                    name = value
+                    worksheet.write(0, cl, value)
+            elif j == 2:
+                if isinstance(value, float):
+                    #value = int(value)
+                    worksheet.write(r, cl, value)
+        r += 1
+
+    chart = workbook.add_chart({'type': 'line'})
+    # Configure the series of the chart from the dataframe data.
+    for i in range(cl):
+        col = i + 1
+        chart.add_series({
+            'name': ['График Чемпионата', 0, col],
+            'categories': ['График Чемпионата', 1, 0, r - 1, 0],
+            'values': ['График Чемпионата', 1, col, r - 1, col],
+        })
+
+    # Configure the chart axes.
+    chart.set_x_axis({'name': 'дата игры'})
+    chart.set_y_axis({'name': 'Рейтинг',
+                      'major_unit': 0.1,
+                      'min': 0,
+                      'max': 1
+                      })
+    chart.set_legend({'position': 'top'})
+    chart.show_blanks_as('span')
+    chart.set_size({'width': 1200, 'height': 580})
+    # Insert the chart into the worksheet.
+    worksheet.insert_chart('C3', chart)
 
     # -----------------------------------------------------------------------------------------------
     #  Last-Day worksheet creation
