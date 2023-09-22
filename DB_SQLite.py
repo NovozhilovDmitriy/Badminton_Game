@@ -285,6 +285,25 @@ select player
   where date = last_date
   order by pct_win desc, cnt_game desc;'''
 
+    Players_Best_Pair_Championship = '''
+    with tournament_stat as
+( select * from v_player_stat where date between ? and ?  -- параметры, определяющие период турнира
+), pair as
+( select player, partner
+       , 100.0*count(case when win_lose = 1 then 1 end)/count(win_lose) win_pct
+       , count(Ra) game_cnt
+    from tournament_stat
+    where player > partner
+    group by player, partner
+)
+select *
+  from ( select pair.*
+              , row_number() over (order by win_pct desc) rn
+           from pair
+           where game_cnt >= 10
+       )
+  where rn <= 3;
+    '''
 
     Players_Last_Day_Stat = '''
 select player
@@ -506,6 +525,7 @@ select d.date
     # -----------------------------------------------------------------------------------------------
     #  ChampionShip Last Day worksheet creation
     worksheet = workbook.add_worksheet('Чемпион Дня')
+    worksheet.set_tab_color("#00CCFF")
     mysel = c.execute(Players_Championship_Day_Stat)
     header = ['Место', 'Игрок', 'Рейтинг', 'Победы', 'Поражения', 'Всего Игр', 'Дельта']
     for idx, col in enumerate(header):
@@ -532,6 +552,7 @@ select d.date
 
     # -----------------------------------------------------------------------------------------------
     worksheet = workbook.add_worksheet('Чемпионат 2023')
+    worksheet.set_tab_color("#00CCFF")
     mysel = c.execute(Players_Championship_Total_Stat, (ch_start, ch_end, ch_percent, ch_active))
     header = ['Место', 'Игрок', 'Всего Игр', 'Рейтинг', 'Динамика', 'В зачет']
     for idx, col in enumerate(header):
@@ -557,9 +578,38 @@ select d.date
     worksheet.set_column('B:B', 18)
     worksheet.set_column('C:G', 11)
     #worksheet.set_column('F:F', 18)
+
+    # -----------------------------------------------------------------------------------------------
+    #  ChampionShip Best pair of Players (First 3, 10 games min)
+    worksheet = workbook.add_worksheet('TOP-3 Чемпионата')
+    worksheet.set_tab_color("#00CCFF")
+    mysel = c.execute(Players_Best_Pair_Championship, (ch_start, ch_end))
+    header = ['Место', 'Игрок', 'Игрок', 'Побеждали %', 'Всего игр']
+    for idx, col in enumerate(header):
+        worksheet.write(0, idx, col, head_fmt)  # write the column name one time in a row
+
+    # write all data from SELECT. keep 1 row and 1 column NULL
+    for i, row in enumerate(mysel):
+        for j, value in enumerate(row):
+            if j == 0:
+                worksheet.write(i + 1, j + 1, value, bold_fmt)  # Players Name format
+            elif j == 1:
+                worksheet.write(i + 1, j + 1, value, bold_fmt)  # Players Name format
+            elif j == 2:
+                value = round(value, 1)
+                worksheet.write(i + 1, j + 1, value, score_fmt)  # Rating format
+            elif j == 3:
+                worksheet.write(i + 1, j + 1, value, def_fmt)  #
+
+    worksheet.write_column(1, 0, [i for i in range(1, len(c.execute(Players_Best_Pair_Championship, (ch_start, ch_end)).fetchall()) + 1)],
+                           head_fmt)  # make and insert column 1 with index
+
+    worksheet.set_column('B:C', 18)
+    worksheet.set_column('D:E', 14)
     # -----------------------------------------------------------------------------------------------
     # Grapth of Championat stat
     worksheet = workbook.add_worksheet('График Чемпионата')
+    worksheet.set_tab_color("#00CCFF")
     mysel = c.execute(Players_Championship_daily_stat, (ch_start, ch_end))
 
     r = 1
@@ -612,6 +662,7 @@ select d.date
     # -----------------------------------------------------------------------------------------------
     #  Last-Day worksheet creation
     worksheet = workbook.add_worksheet('Рейтинг Дня')
+    worksheet.set_tab_color("#00CC66")
     mysel = c.execute(Players_Last_Day_Stat)
     header = ['Место', 'Игрок', 'Дельта', 'Победы', 'Проигрыш', 'Победа на балансе', 'Проигрыш на балансе', 'Победа через 10', 'Проигрыш через 10', 'Всего Игр', '% Побед']
     for idx, col in enumerate(header):
@@ -631,6 +682,7 @@ select d.date
 
     # -----------------------------------------------------------------------------------------------
     worksheet = workbook.add_worksheet('Общий Рейтинг')
+    worksheet.set_tab_color("#00CC66")
     mysel=c.execute(Players_Total_Stat)
     header = ['Место', 'Игрок', 'Рейтинг', 'Дельта', 'Всего Игр', 'Последняя Игра', 'Динамика']
     for idx, col in enumerate(header):
@@ -748,6 +800,7 @@ select d.date
 
     #-----------------------------------------------------------------------------------------------
     worksheet = workbook.add_worksheet('График Рейтинга')
+    worksheet.set_tab_color("#00CC66")
     mysel = c.execute(Players_daily_stat)
 
     r = 1

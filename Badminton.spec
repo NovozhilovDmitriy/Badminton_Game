@@ -28,7 +28,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='Badminton_16092023',
+    name='Badminton_22092023',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
