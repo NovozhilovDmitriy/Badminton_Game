@@ -281,6 +281,7 @@ select player
      , pct_win -- % побед
      , case when lag_player_rank <> player_rank then lag_player_rank-player_rank end diff_rank
      , case when cnt_game > (select avg(cnt_game) * ? from (select player, count(*) cnt_game, row_number() over (order by count(*) desc) rn from tournament_stat group by player) where rn <= ?) then ' ' else 'НЕТ' end prize -- Добавить вхождение в призы (10 игроков/40% от avg)
+     , (select avg(cnt_game)* ? from (select player, count(*) cnt_game, row_number() over (order by count(*) desc) rn from tournament_stat group by player) where rn <= ? ) score
   from t4
   where date = last_date
   order by pct_win desc, cnt_game desc;'''
@@ -527,7 +528,7 @@ select d.date
     worksheet = workbook.add_worksheet('Чемпион Дня')
     worksheet.set_tab_color("#00CCFF")
     mysel = c.execute(Players_Championship_Day_Stat)
-    header = ['Место', 'Игрок', 'Рейтинг', 'Победы', 'Поражения', 'Всего Игр', 'Дельта']
+    header = ['Место', 'Игрок', 'Рейтинг', 'Победы', 'Поражения', 'Всего Игр', 'Лич. Очки']
     for idx, col in enumerate(header):
         worksheet.write(0, idx, col, head_fmt)  # write the column name one time in a row
 
@@ -553,7 +554,7 @@ select d.date
     # -----------------------------------------------------------------------------------------------
     worksheet = workbook.add_worksheet('Чемпионат 2023')
     worksheet.set_tab_color("#00CCFF")
-    mysel = c.execute(Players_Championship_Total_Stat, (ch_start, ch_end, ch_percent, ch_active))
+    mysel = c.execute(Players_Championship_Total_Stat, (ch_start, ch_end, ch_percent, ch_active, ch_percent, ch_active))
     header = ['Место', 'Игрок', 'Всего Игр', 'Рейтинг', 'Динамика', 'В зачет']
     for idx, col in enumerate(header):
         worksheet.write(0, idx, col, head_fmt)  # write the column name one time in a row
@@ -569,15 +570,18 @@ select d.date
             elif j == 2:
                 value = round(value, 3)
                 worksheet.write(i + 1, j + 1, value, score3_fmt)
+            elif j == 5:
+                value = f'В зачет >{int(value)}игр'
+                worksheet.write(0, 5, value, head_fmt)
             else:
                 worksheet.write(i + 1, j + 1, value, def_fmt)
 
-    worksheet.write_column(1, 0, [i for i in range(1, len(c.execute(Players_Championship_Total_Stat, (ch_start, ch_end, ch_percent, ch_active)).fetchall()) + 1)],
+    worksheet.write_column(1, 0, [i for i in range(1, len(c.execute(Players_Championship_Total_Stat, (ch_start, ch_end, ch_percent, ch_active, ch_percent, ch_active)).fetchall()) + 1)],
                            head_fmt)  # make and insert column 1 with index
 
     worksheet.set_column('B:B', 18)
-    worksheet.set_column('C:G', 11)
-    #worksheet.set_column('F:F', 18)
+    worksheet.set_column('C:E', 11)
+    worksheet.set_column('F:F', 13)
 
     # -----------------------------------------------------------------------------------------------
     #  ChampionShip Best pair of Players (First 3, 10 games min)
@@ -661,10 +665,10 @@ select d.date
 
     # -----------------------------------------------------------------------------------------------
     #  Last-Day worksheet creation
-    worksheet = workbook.add_worksheet('Рейтинг Дня')
+    worksheet = workbook.add_worksheet('Лич. рейтинг Дня')
     worksheet.set_tab_color("#00CC66")
     mysel = c.execute(Players_Last_Day_Stat)
-    header = ['Место', 'Игрок', 'Дельта', 'Победы', 'Проигрыш', 'Победа на балансе', 'Проигрыш на балансе', 'Победа через 10', 'Проигрыш через 10', 'Всего Игр', '% Побед']
+    header = ['Место', 'Игрок', 'Очки за день', 'Победы', 'Проигрыш', 'Победа на балансе', 'Проигрыш на балансе', 'Победа через 10', 'Проигрыш через 10', 'Всего Игр', '% Побед']
     for idx, col in enumerate(header):
         worksheet.write(0, idx, col, head_fmt)  # write the column name one time in a row
 
@@ -681,10 +685,10 @@ select d.date
     worksheet.set_column('C:K', 11)
 
     # -----------------------------------------------------------------------------------------------
-    worksheet = workbook.add_worksheet('Общий Рейтинг')
+    worksheet = workbook.add_worksheet('Весь Лич. Рейтинг')
     worksheet.set_tab_color("#00CC66")
     mysel=c.execute(Players_Total_Stat)
-    header = ['Место', 'Игрок', 'Рейтинг', 'Дельта', 'Всего Игр', 'Последняя Игра', 'Динамика']
+    header = ['Место', 'Игрок', 'Рейтинг', 'Очки за день', 'Всего Игр', 'Последняя Игра', 'Динамика']
     for idx, col in enumerate(header):
         worksheet.write(0, idx, col, head_fmt)  # write the column name one time in a row
 
@@ -721,7 +725,7 @@ select d.date
 
     for i, row in enumerate(mysel):
         header = ['', 'Игрок', 'Рейтинг', 'Всего      Игр', 'Счет Партии', 'Средний Рейтинг', 'Ожидание (Ea)',
-                  'Очки     (Sa)', 'Дельта     (Ra)']
+                  'Балл     (Sa)', 'Лич. очки за Игру']
         for idx, col in enumerate(header):
             worksheet.write(r - 1, idx, col, head_fmt)  # write the column name one time in a row
         worksheet.merge_range(r, 0, r + 1, 0, 'Пара 1', head_fmt)
