@@ -340,7 +340,42 @@ select player
     group by pl.player, d.date
 ), t3 as
 ( select t2.*
-       , rank() over (partition by date order by score desc) player_rank
+       , dense_rank() over (partition by date order by score desc) player_rank
+    from t2
+), t4 as
+( select t3.*
+       , lag(player_rank) over (partition by player order by date) lag_player_rank
+    from t3
+)
+select player
+     , score -- текущий рейтинг
+     , last_date_Ra -- дельту прироста за последнюю дату
+     , cnt_game -- сколько игр было сыграно
+     , player_last_date -- датой когда этот игрок играл последний раз
+     , case when lag_player_rank <> player_rank then lag_player_rank-player_rank end diff_rank
+  from t4
+  where date = last_date
+    and julianday() - julianday(player_last_date) <= 180
+  order by score desc;'''
+
+    Players_Total_Stat_all = ''' with d as
+( select distinct date from stat
+), pl as
+( select player, min(date) min_date from v_player_stat group by player
+), t2 as
+( select pl.player
+       , d.date
+       , sum(t1.Ra) last_date_Ra
+       , sum(count(t1.Ra)) over (partition by pl.player order by d.date) cnt_game
+       , max(case when sum(t1.Ra) is not null then d.date end) over (partition by pl.player) player_last_date
+       , first_value(min(current_score)) over (partition by pl.player order by d.date) + sum(sum(t1.Ra)) over (partition by pl.player order by d.date) score
+       , max(d.date) over () last_date
+    from d inner join pl on d.date >= pl.min_date
+         left outer join v_player_stat t1 on t1.date = d.date and t1.player = pl.player
+    group by pl.player, d.date
+), t3 as
+( select t2.*
+       , dense_rank() over (partition by date order by score desc) player_rank
     from t2
 ), t4 as
 ( select t3.*
@@ -855,6 +890,34 @@ select d.date
     worksheet.insert_chart('C3', chart)
     # -----------------------------------------------------------------------------------------------
 
+    worksheet = workbook.add_worksheet('Все Игроки статистика')
+    worksheet.set_tab_color("#00CC66")
+    mysel = c.execute(Players_Total_Stat_all)
+    header = ['Место', 'Игрок', 'Рейтинг', 'Очки за день', 'Всего Игр', 'Последняя Игра', 'Динамика']
+    for idx, col in enumerate(header):
+        worksheet.write(0, idx, col, head_fmt)  # write the column name one time in a row
+
+    # write all data from SELECT. keep 1 row and 1 column NULL
+    for i, row in enumerate(mysel):
+        for j, value in enumerate(row):
+            if j == 5:
+                worksheet.write(i + 1, j + 1, value, def_fmt_color)
+            elif j == 0:
+                worksheet.write(i + 1, j + 1, value, bold_fmt)
+
+            elif isinstance(value, float):
+                value = round(value, 1)
+                worksheet.write(i + 1, j + 1, value, def_fmt)
+            else:
+                worksheet.write(i + 1, j + 1, value, def_fmt)
+
+    worksheet.write_column(1, 0, [i for i in range(1, len(c.execute(Players_Total_Stat_all).fetchall()) + 1)],
+                           head_fmt)  # make and insert column 1 with index
+
+    worksheet.set_column('B:B', 18)
+    worksheet.set_column('C:G', 11)
+    worksheet.set_column('F:F', 18)
+    # -----------------------------------------------------------------------------------------------
     workbook.close()
 
 
